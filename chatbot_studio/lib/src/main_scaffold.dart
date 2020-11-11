@@ -1,4 +1,3 @@
-import 'package:async/async.dart';
 import 'package:chatbot_studio/src/console_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:interpreter/interpreter.dart';
@@ -60,6 +59,13 @@ flow 'main'
   send text 'The wait click ... statement waits for you to click the screen the given amount of times.'
   wait click 3
   send text 'You´ve clicked the screen 3 times. Congrats ;P'
+  send text 'Finally you can wait for events to happen'
+  send event 'say-welcome'
+  send text 'Now we wait until the chatbot triggers this event'
+  wait event 'say-welcome'
+  send text 'Great. You´ve found the triger event button ;P'
+  send text 'This is the end of the wait statement demo'
+  send text 'Bye bye :)'
 ''',
   },
   {
@@ -177,14 +183,16 @@ class MainScaffoldState extends State<MainScaffold> {
   /// Runs the current program.
   ///
   /// Outputs all status or error messages on the console.
-  void runProgram() {
+  void runProgram() async {
     if (_isRunningProgram) return;
 
     // clear the console
     consolePanelKey.currentState.clear();
 
+    var programCode = codePanelKey.currentState.programCode;
+
     // print an error on the console if the program code is empty
-    if (codePanelKey.currentState.programCode.trim().isEmpty) {
+    if (programCode.trim().isEmpty) {
       consolePanelKey.currentState
           .print('ERROR: Program is empty!', LogLevel.error);
       return;
@@ -195,7 +203,9 @@ class MainScaffoldState extends State<MainScaffold> {
     });
 
     var chatbot = chatbotPanelKey.currentState;
-    _interpreter = Interpreter(chatbot);
+    var lexer = Lexer(programCode);
+    var parser = Parser(lexer);
+    var interpreter = Interpreter(parser, chatbot);
 
     // print Interpreter log messages to the console panel
     // this also includes log messages from the Lexer and Parser
@@ -203,7 +213,9 @@ class MainScaffoldState extends State<MainScaffold> {
       if (!_enabledLogs) return;
       consolePanelKey.currentState.print(msg);
     };
-    _interpreter.logPrinter = printToConsole;
+    lexer.logPrinter = printToConsole;
+    parser.logPrinter = printToConsole;
+    interpreter.logPrinter = printToConsole;
 
     // highlight the code lines that are currently executed by the interpreter
     NodeVisitedCallback highlightCodeVisitor = (node) {
@@ -213,21 +225,20 @@ class MainScaffoldState extends State<MainScaffold> {
         to: node.lineEnd,
       );
     };
-    _interpreter.onNodeVisited = highlightCodeVisitor;
+    interpreter.onNodeVisited = highlightCodeVisitor;
 
-    // interpret the program code
-    var program = codePanelKey.currentState.programCode;
-    _runningProgramOperation = CancelableOperation.fromFuture(
-      _interpreter.interpret(program),
-    );
-    _runningProgramOperation.value.then((_) {
-      // succcess
+    setState(() {
+      _runningInterpretation = interpreter.interpret();
+    });
+    await _runningInterpretation.future.then((_) {
+      consolePanelKey.currentState
+          .print('Interpretation completed successfully');
     }).catchError((error) {
       consolePanelKey.currentState.print(error, LogLevel.error);
     }).whenComplete(() {
       setState(() {
         _isRunningProgram = false;
-        _runningProgramOperation = null;
+        _runningInterpretation = null;
       });
     });
   }
@@ -237,8 +248,7 @@ class MainScaffoldState extends State<MainScaffold> {
     if (!_isRunningProgram) return;
 
     setState(() {
-      _interpreter.cancel();
-      _runningProgramOperation?.cancel();
+      _runningInterpretation?.cancel();
       _isRunningProgram = false;
     });
   }
@@ -249,9 +259,8 @@ class MainScaffoldState extends State<MainScaffold> {
   // Whether the interpreter should print log messages to the console.
   bool _enabledLogs = true;
 
-  // Used to stop a running program.
-  CancelableOperation _runningProgramOperation;
-  Interpreter _interpreter;
+  // Used to cancel the running interpreter.
+  Interpretation _runningInterpretation;
 
   @override
   Widget build(BuildContext context) {

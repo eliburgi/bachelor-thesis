@@ -25,6 +25,8 @@ class ChatbotPanel extends StatefulWidget {
 class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
   @override
   void clear() {
+    if (_messages.isEmpty) return;
+
     setState(() {
       _messages.clear();
     });
@@ -140,6 +142,12 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
   String _waitForEventName;
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Widget chat = Scrollbar(
       child: ListView.builder(
@@ -190,11 +198,34 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
     return Container(
       width: 350,
       height: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
       color: Colors.white,
       child: Column(
         children: [
-          
+          Container(
+            height: 42.0,
+            color: Colors.grey[100],
+            child: (_waitForEventCompleter != null &&
+                    !_waitForEventCompleter.isCompleted)
+                ? Row(
+                    children: [
+                      SizedBox(width: 24.0),
+                      IconButton(
+                        tooltip: 'Debug: Trigger Event',
+                        icon: Icon(Icons.edit, color: Colors.black),
+                        onPressed: () {
+                          handleTriggerEvent(_waitForEventName);
+                        },
+                      ),
+                    ],
+                  )
+                : SizedBox.shrink(),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: chat,
+            ),
+          ),
         ],
       ),
     );
