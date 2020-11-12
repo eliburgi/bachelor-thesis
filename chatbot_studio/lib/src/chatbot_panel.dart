@@ -202,24 +202,22 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
       child: Column(
         children: [
           Container(
-            height: 42.0,
-            color: Colors.grey[100],
-            child: (_waitForEventCompleter != null &&
-                    !_waitForEventCompleter.isCompleted)
-                ? Row(
-                    children: [
-                      SizedBox(width: 24.0),
-                      IconButton(
-                        tooltip: 'Debug: Trigger Event',
-                        icon: Icon(Icons.edit, color: Colors.black),
-                        onPressed: () {
-                          handleTriggerEvent(_waitForEventName);
-                        },
-                      ),
-                    ],
-                  )
-                : SizedBox.shrink(),
-          ),
+              height: 42.0,
+              color: Colors.grey[100],
+              child: Row(
+                children: [
+                  SizedBox(width: 24.0),
+                  if (_waitForEventCompleter != null &&
+                      !_waitForEventCompleter.isCompleted)
+                    IconButton(
+                      tooltip: 'Debug: Trigger Event',
+                      icon: Icon(Icons.edit, color: Colors.black),
+                      onPressed: () {
+                        handleTriggerEvent(_waitForEventName);
+                      },
+                    ),
+                ],
+              )),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),

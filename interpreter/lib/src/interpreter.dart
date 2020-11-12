@@ -3,52 +3,39 @@ import 'package:interpreter/src/util.dart';
 import 'package:meta/meta.dart';
 
 import 'chatbot.dart';
-import 'lexer.dart';
 import 'parser.dart';
 
 class Interpreter {
   Interpreter(
+    this.parser,
     this.chatbotDelegate, {
     this.logPrinter,
     this.onNodeVisited,
   });
 
+  final Parser parser;
   final Chatbot chatbotDelegate;
 
   NodeVisitedCallback onNodeVisited;
 
-  Future<void> interpret(String program) async {
-    var lexer = Lexer(program, logPrinter: logPrinter);
-    var parser = Parser(lexer, logPrinter: logPrinter);
-
-    var tree = parser.parse();
-    _runtimeContext = RuntimeContext(
-      chatbot: chatbotDelegate,
-      logPrinter: logPrinter,
-      onNodeVisited: onNodeVisited,
-    );
+  Interpretation interpret() {
     _log('STARTED');
-    await tree.execute(_runtimeContext);
-    _log('FINISHED');
-  }
 
-  Future<void> interpretAST(ASTNode tree) async {
-    _runtimeContext = RuntimeContext(
+    // The runtime context is passed to the AST nodes and contains important
+    // state about the current interpretation.
+    var context = RuntimeContext(
       chatbot: chatbotDelegate,
       logPrinter: logPrinter,
       onNodeVisited: onNodeVisited,
     );
-    await tree.execute(_runtimeContext);
-  }
 
-  /// Cancels the interpreter.
-  void cancel() {
-    if (_runtimeContext == null) return;
-    _runtimeContext.canceled = true;
-    _log('cancel - CANCELED INTERPRETATION');
+    var run = () async {
+      // Parsing the program yields the AST tree for this program.
+      var tree = parser.parse();
+      return await tree.execute(context).whenComplete(() => _log('FINISHED'));
+    };
+    return Interpretation(run(), context);
   }
-
-  RuntimeContext _runtimeContext;
 
   LogPrinter logPrinter;
 
@@ -60,6 +47,29 @@ class Interpreter {
 
 typedef NodeVisitedCallback = Function(ASTNode);
 
+/// Represents an ongoing interpretation process.
+class Interpretation {
+  Interpretation(this.future, this.context);
+
+  /// The future which completes when the interpretation is completed.
+  ///
+  /// May throw an error if there happens to be a runtime exception
+  /// during the interpretation of the AST.
+  final Future future;
+
+  final RuntimeContext context;
+
+  /// Cancels the ongoing interpretation.
+  void cancel() {
+    // By setting context.canceled to true we tell the AST nodes to
+    // not execute any more code but instead throw an exception that stops
+    // the ongoing execution of the AST tree.
+    context.canceled = true;
+  }
+}
+
+/// Used to pass important information about the interpretation around in
+/// the AST.
 class RuntimeContext {
   RuntimeContext({
     @required this.chatbot,

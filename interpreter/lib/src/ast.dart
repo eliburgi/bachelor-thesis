@@ -396,7 +396,8 @@ class WaitStatementNode extends ASTNode {
         }
         break;
       case TriggerType.event:
-        // todo: chatbot.waitForEvent()
+        // wait until the chatbot client triggers the event
+        await context.chatbot.waitForEvent(eventName);
         break;
     }
 

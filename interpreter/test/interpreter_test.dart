@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:interpreter/interpreter.dart';
 
 import 'package:interpreter/src/chatbot.dart';
 import 'package:interpreter/src/interpreter.dart';
@@ -36,7 +37,9 @@ flow 'main'
   send text 'Hello World'
 ''';
 
-    var interpreter = Interpreter(MockedChatbot());
-    interpreter.interpret(program);
+    var lexer = Lexer(program);
+    var parser = Parser(lexer);
+    var interpreter = Interpreter(parser, MockedChatbot());
+    interpreter.interpret();
   });
 }
