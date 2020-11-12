@@ -347,7 +347,7 @@ class Lexer {
   void _error(String message) {
     errors.add(message);
     // terminate lexer forcefully
-    throw message;
+    throw LexerError(message, _line, _col);
   }
 
   LogPrinter logPrinter;
@@ -356,4 +356,15 @@ class Lexer {
     if (logPrinter == null) return;
     logPrinter('Lexer - $message');
   }
+}
+
+class LexerError {
+  LexerError(this.message, this.line, this.col);
+
+  final String message;
+  final int line;
+  final int col;
+
+  @override
+  String toString() => 'Lexer-Error in line $line: $message';
 }

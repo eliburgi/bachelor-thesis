@@ -542,7 +542,7 @@ class Parser {
   void _error(String message) {
     errors.add(message);
     // terminate parsing forcefully
-    throw message;
+    throw ParserError(message, _currentToken);
   }
 
   LogPrinter logPrinter;
@@ -551,4 +551,14 @@ class Parser {
     if (logPrinter == null) return;
     logPrinter('Parser - $message');
   }
+}
+
+class ParserError {
+  ParserError(this.message, this.token);
+
+  final String message;
+  final Token token;
+
+  @override
+  String toString() => 'Parser-Error in line ${token.line}: $message';
 }

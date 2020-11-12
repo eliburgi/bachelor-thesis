@@ -32,7 +32,7 @@ class Interpreter {
     var run = () async {
       // Parsing the program yields the AST tree for this program.
       var tree = parser.parse();
-      return await tree.execute(context).whenComplete(() => _log('FINISHED'));
+      return await tree.execute(context).then((_) => _log('FINISHED'));
     };
     return Interpretation(run(), context);
   }
@@ -127,4 +127,16 @@ class RuntimeContext {
 
   /// Set via 'set delay ...' statement.
   int delayInMilliseconds = 0;
+}
+
+class RuntimeError {
+  RuntimeError(this.message, this.node);
+
+  final String message;
+
+  /// The node that caused the error.
+  final ASTNode node;
+
+  @override
+  String toString() => 'Runtime-Error in line ${node.lineStart}: $message';
 }

@@ -30,6 +30,16 @@ class CodePanelState extends State<CodePanel> {
     setState(() {
       _highlightedLineStart = from;
       _highlightedLineEnd = to;
+      _highlightedErrorLine = -1;
+    });
+  }
+
+  /// Marks the given line as having an error.
+  void highlightError(int line) {
+    setState(() {
+      _highlightedErrorLine = line;
+      _highlightedLineStart = -1;
+      _highlightedLineEnd = -1;
     });
   }
 
@@ -44,8 +54,9 @@ class CodePanelState extends State<CodePanel> {
   final _textEditingController = TextEditingController(text: '');
   var _textFieldFocusNode = FocusNode();
 
-  var _highlightedLineStart = 0;
-  var _highlightedLineEnd = 0;
+  var _highlightedLineStart = -1;
+  var _highlightedLineEnd = -1;
+  int _highlightedErrorLine = -1;
 
   List<String> get _programLines {
     var lines = programCode.split('\n');
@@ -67,10 +78,10 @@ class CodePanelState extends State<CodePanel> {
   Widget build(BuildContext context) {
     var programLines = _programLines;
 
-    return Container(
+    Widget editor = Container(
       constraints: BoxConstraints.expand(),
       color: Colors.white,
-      child: widget.isRunningProgram
+      child: widget.isRunningProgram || _highlightedErrorLine > 0
           ? RichText(
               text: TextSpan(
                 style: Theme.of(context).textTheme.subtitle1,
@@ -92,6 +103,17 @@ class CodePanelState extends State<CodePanel> {
                             ),
                       );
                     }
+
+                    bool highlightError = _highlightedErrorLine == lineNr;
+                    if (highlightError) {
+                      return TextSpan(
+                        text: '${programLines[lineIndex]}\n',
+                        style: Theme.of(context).textTheme.subtitle1.copyWith(
+                              backgroundColor: Colors.redAccent,
+                            ),
+                      );
+                    }
+
                     return TextSpan(
                       text: '${programLines[lineIndex]}\n',
                     );
@@ -133,5 +155,20 @@ class CodePanelState extends State<CodePanel> {
               ),
             ),
     );
+
+    if (_highlightedErrorLine > 0) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          // start editing program again after an error has occurred
+          setState(() {
+            _highlightedErrorLine = -1;
+          });
+        },
+        child: editor,
+      );
+    }
+
+    return editor;
   }
 }

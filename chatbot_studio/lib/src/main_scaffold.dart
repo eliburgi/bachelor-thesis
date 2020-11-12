@@ -227,6 +227,7 @@ class MainScaffoldState extends State<MainScaffold> {
     };
     interpreter.onNodeVisited = highlightCodeVisitor;
 
+    // now actually interpret the program
     setState(() {
       _runningInterpretation = interpreter.interpret();
     });
@@ -234,7 +235,21 @@ class MainScaffoldState extends State<MainScaffold> {
       consolePanelKey.currentState
           .print('Interpretation completed successfully');
     }).catchError((error) {
-      consolePanelKey.currentState.print(error, LogLevel.error);
+      // highlight the line that caused the error in the program
+      int programLineThatCausedError;
+      if (error is LexerError) {
+        programLineThatCausedError = error.line;
+      } else if (error is ParserError) {
+        programLineThatCausedError = error.token.line;
+      } else if (error is RuntimeError) {
+        programLineThatCausedError = error.node.lineStart;
+      }
+      if (programLineThatCausedError != null) {
+        codePanelKey.currentState.highlightError(programLineThatCausedError);
+      }
+
+      // additionally print the error message on the console
+      consolePanelKey.currentState.print(error.toString(), LogLevel.error);
     }).whenComplete(() {
       setState(() {
         _isRunningProgram = false;

@@ -17,7 +17,7 @@ abstract class ASTNode {
   Future<void> execute(RuntimeContext context) {
     // do not execute this node if the interpretation has been canceled
     if (context.canceled) {
-      throw 'Interpretation was canceled!';
+      error('Interpretation was canceled!');
     }
 
     // notify the listener (if set) that this node is now visited
@@ -26,6 +26,10 @@ abstract class ASTNode {
     }
 
     return Future.value();
+  }
+
+  void error(String message) {
+    throw RuntimeError(message, this);
   }
 
   void log(RuntimeContext context, String message) {
@@ -231,7 +235,7 @@ class SetStatementNode extends ASTNode {
       case Property.sender:
         // set sender
         if (!context.senders.containsKey(senderName)) {
-          throw 'Cannot set sender $senderName: sender does not exist!';
+          error('Cannot set sender $senderName: sender does not exist!');
         }
         context.currentSender = context.senders[senderName];
         break;
@@ -252,7 +256,7 @@ class StartFlowStatementNode extends ASTNode {
 
     // lookup the flow by its name
     if (!context.flows.containsKey(flowName)) {
-      throw 'Flow $flowName does not exist!';
+      error('Flow $flowName does not exist!');
     }
     var flow = context.flows[flowName];
 
