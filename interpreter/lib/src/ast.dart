@@ -4,6 +4,11 @@ import 'package:interpreter/src/chatbot.dart';
 
 import 'interpreter.dart';
 
+//! todo: free text input node
+//! todo: if node
+//! todo: action node
+//! todo: create counter node
+
 abstract class ASTNode {
   /// Optional. The line in which the first token that belongs to this node
   /// is located in the program code.
@@ -271,6 +276,7 @@ class EndFlowStatementNode extends ASTNode {
     super.execute(context);
 
     log(context, 'execute - FORCEFULLY ENDING CURRENT FLOW');
+    // @see: FlowNode
     return Future.value();
   }
 }
