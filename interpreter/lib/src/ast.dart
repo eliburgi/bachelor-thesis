@@ -323,6 +323,21 @@ class SendStatementNode extends ASTNode {
       context.chatbot.removeLastMessage();
     }
 
+    // perform string interpolation
+    var interpolatedBody = messageBody.replaceAllMapped(r'\$[^\s]+', (match) {
+      // start at start+1 as we do not want the $ in our template
+      var template = messageBody.substring(match.start + 1, match.end);
+      if (template == 'tags') {
+        return context.tags.fold('', (str, tag) => '$str,$tag');
+      }
+      if (context.counters.containsKey(template)) {
+        var counterValue = context.counters[template].value;
+        return counterValue.toString();
+      }
+      // instead of throwing an error here we simply return the template.
+      return template;
+    });
+
     // create the message to be sent
     MessageType type;
     switch (this.messageType) {
@@ -341,7 +356,7 @@ class SendStatementNode extends ASTNode {
     }
     Message message = Message(
       type: type,
-      body: messageBody,
+      body: interpolatedBody,
       params: params,
       sender: context.currentSender, // may be null
     );
