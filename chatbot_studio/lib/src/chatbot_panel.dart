@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:bubble/bubble.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,10 @@ import 'package:transparent_image/transparent_image.dart';
 
 // used for state management
 final chatbotPanelKey = GlobalKey<ChatbotPanelState>();
+
+class SingleChoiceMessage extends Message {
+  VoidCallback onChoiceSelected;
+}
 
 class ChatbotPanel extends StatefulWidget {
   ChatbotPanel({
@@ -115,7 +120,7 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
 
   void handleClick() {
     setState(() {
-      _waitForClickCompleter.complete(true);
+      _waitForClickCompleter?.complete(true);
       _waitForClickCompleter = null;
     });
   }
@@ -124,7 +129,7 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
     if (eventName == _waitForEventName) {
       // chatbot is currently waiting for this event to happen
       setState(() {
-        _waitForEventCompleter.complete(eventName);
+        _waitForEventCompleter?.complete(eventName);
         _waitForEventCompleter = null;
         _waitForEventName = null;
       });

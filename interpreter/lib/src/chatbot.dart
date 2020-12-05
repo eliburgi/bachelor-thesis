@@ -1,10 +1,7 @@
 import 'package:meta/meta.dart';
 
 abstract class Chatbot {
-  /// Clears the current state of the chatbot.
-  ///
-  /// This includes clearing the chat history, any user input that is shown,
-  /// etc.
+  /// Clears all messages from the chat history.
   void clear();
 
   /// Appends a new message to the chat.
@@ -13,8 +10,7 @@ abstract class Chatbot {
   /// Removes the latest appended message.
   void removeLastMessage();
 
-  /// Prompts the user to input something and waits for the user to
-  /// input something.
+  /// Prompts the user to input something and waits for a response.
   Future<UserInputResponse> waitForInput(UserInput input);
 
   /// Waits for the user to click on the chatbot.
