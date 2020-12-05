@@ -117,6 +117,11 @@ class RuntimeContext {
   /// The name of the sender is used as a key.
   Map<String, Sender> senders = {};
 
+  /// Contains all counters created via a 'create counter ...' statement.
+  ///
+  /// The name of the counter is used as a key.
+  Map<String, Counter> counters = {};
+
   /// Whether messages sent via 'send' statement should be delayed dynamically.
   ///
   /// Longer text messages will have a greater delay than shorter messages.

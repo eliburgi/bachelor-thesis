@@ -55,6 +55,18 @@ class Sender {
   final Map<String, dynamic> params;
 }
 
+class Counter {
+  Counter({
+    @required this.name,
+  });
+
+  /// Unique identifier.
+  final String name;
+
+  /// The current value of the counter. By default `0`.
+  int value = 0;
+}
+
 enum MessageType { text, image, audio, event, waitingForTrigger, typing }
 
 class Message {

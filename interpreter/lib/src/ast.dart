@@ -178,7 +178,9 @@ class CreateStatementNode extends ASTNode {
         context.senders.putIfAbsent(sender.name, () => sender);
         break;
       case EntityType.counter:
-        // todo
+        // create the counter and store it in the context
+        var counter = Counter(name: entityName);
+        context.counters.putIfAbsent(counter.name, () => counter);
         break;
     }
 
