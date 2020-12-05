@@ -71,6 +71,7 @@ class CodePanelState extends State<CodePanel> {
   Widget build(BuildContext context) {
     bool allowEditing = !widget.isRunningProgram && _highlightedErrorLine < 1;
 
+    var codeLines = sourceCode.split('\n');
     Widget editor = Container(
       constraints: BoxConstraints.expand(),
       color: Colors.white,
@@ -79,7 +80,7 @@ class CodePanelState extends State<CodePanel> {
               text: TextSpan(
                 style: Theme.of(context).textTheme.subtitle1,
                 children: List.generate(
-                  programLines.length,
+                  codeLines.length,
                   (lineIndex) {
                     int lineNr = lineIndex + 1;
                     bool highlightLine = _highlightedLineStart <= lineNr &&
@@ -90,7 +91,7 @@ class CodePanelState extends State<CodePanel> {
                           ? Colors.yellowAccent
                           : Colors.greenAccent;
                       return TextSpan(
-                        text: '${programLines[lineIndex]}\n',
+                        text: '${codeLines[lineIndex]}\n',
                         style: Theme.of(context).textTheme.subtitle1.copyWith(
                               backgroundColor: color,
                             ),
@@ -100,7 +101,7 @@ class CodePanelState extends State<CodePanel> {
                     bool highlightError = _highlightedErrorLine == lineNr;
                     if (highlightError) {
                       return TextSpan(
-                        text: '${programLines[lineIndex]}\n',
+                        text: '${codeLines[lineIndex]}\n',
                         style: Theme.of(context).textTheme.subtitle1.copyWith(
                               backgroundColor: Colors.redAccent,
                             ),
@@ -108,7 +109,7 @@ class CodePanelState extends State<CodePanel> {
                     }
 
                     return TextSpan(
-                      text: '${programLines[lineIndex]}\n',
+                      text: '${codeLines[lineIndex]}\n',
                     );
                   },
                 ),
@@ -149,90 +150,8 @@ class CodePanelState extends State<CodePanel> {
             ),
     );
 
-    return editor;
-  }
-
-  Widget _buildEditableView() {
-    return RawKeyboardListener(
-      focusNode: _textFieldFocusNode,
-      onKey: (event) {
-        if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
-          // the user has pressed the TAB key
-          // insert 2 whitespaces at the current cursor position
-          var cursorSelection = _textEditingController.selection;
-          var codePrefix = cursorSelection.textBefore(sourceCode);
-          var codeSuffix = cursorSelection.textAfter(sourceCode);
-          _textEditingController.value = TextEditingValue(
-            text: '$codePrefix  $codeSuffix',
-            selection: TextSelection.fromPosition(
-              TextPosition(offset: cursorSelection.end + 2),
-            ),
-          );
-
-          // without this code the text field would loose its focus
-          // whenever the user presses TAB (default Flutter behavior)
-          // this code therefore makes sure the cursor stays active
-          // within the textfield even if the user pressed TAB
-          FocusScope.of(context).requestFocus(_textFieldFocusNode);
-        }
-      },
-      child: TextField(
-        controller: _textEditingController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-        ),
-        minLines: null, // needs to be null when expands is true
-        maxLines: null, // needs to be null when expands is true
-        expands: true,
-      ),
-    );
-  }
-
-  Widget _buildNonEditableView() {
-    var codeLines = sourceCode.split('\n');
-
-    var editor = RichText(
-      text: TextSpan(
-        style: Theme.of(context).textTheme.subtitle1,
-        children: List.generate(
-          codeLines.length,
-          (lineIndex) {
-            int lineNr = lineIndex + 1;
-            bool highlightLine = _highlightedLineStart <= lineNr &&
-                lineNr <= _highlightedLineEnd;
-
-            if (highlightLine) {
-              var color = _highlightedLineStart != _highlightedLineEnd
-                  ? Colors.yellowAccent
-                  : Colors.greenAccent;
-              return TextSpan(
-                text: '${codeLines[lineIndex]}\n',
-                style: Theme.of(context).textTheme.subtitle1.copyWith(
-                      backgroundColor: color,
-                    ),
-              );
-            }
-
-            bool highlightError = _highlightedErrorLine == lineNr;
-            if (highlightError) {
-              return TextSpan(
-                text: '${codeLines[lineIndex]}\n',
-                style: Theme.of(context).textTheme.subtitle1.copyWith(
-                      backgroundColor: Colors.redAccent,
-                    ),
-              );
-            }
-
-            return TextSpan(
-              text: '${codeLines[lineIndex]}\n',
-            );
-          },
-        ),
-      ),
-    );
-
     if (_highlightedErrorLine > 0) {
-      return GestureDetector(
+      editor = GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
           // start editing program again after an error has occurred
@@ -243,6 +162,101 @@ class CodePanelState extends State<CodePanel> {
         child: editor,
       );
     }
+
     return editor;
   }
+
+  // Widget _buildEditableView() {
+  //   return RawKeyboardListener(
+  //     focusNode: _textFieldFocusNode,
+  //     onKey: (event) {
+  //       if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
+  //         // the user has pressed the TAB key
+  //         // insert 2 whitespaces at the current cursor position
+  //         var cursorSelection = _textEditingController.selection;
+  //         var codePrefix = cursorSelection.textBefore(sourceCode);
+  //         var codeSuffix = cursorSelection.textAfter(sourceCode);
+  //         _textEditingController.value = TextEditingValue(
+  //           text: '$codePrefix  $codeSuffix',
+  //           selection: TextSelection.fromPosition(
+  //             TextPosition(offset: cursorSelection.end + 2),
+  //           ),
+  //         );
+
+  //         // without this code the text field would loose its focus
+  //         // whenever the user presses TAB (default Flutter behavior)
+  //         // this code therefore makes sure the cursor stays active
+  //         // within the textfield even if the user pressed TAB
+  //         FocusScope.of(context).requestFocus(_textFieldFocusNode);
+  //       }
+  //     },
+  //     child: TextField(
+  //       controller: _textEditingController,
+  //       decoration: InputDecoration(
+  //         border: InputBorder.none,
+  //       ),
+  //       minLines: null, // needs to be null when expands is true
+  //       maxLines: null, // needs to be null when expands is true
+  //       expands: true,
+  //     ),
+  //   );
+  // }
+
+  // Widget _buildNonEditableView() {
+  //   var codeLines = sourceCode.split('\n');
+
+  //   var editor = RichText(
+  //     text: TextSpan(
+  //       style: Theme.of(context).textTheme.subtitle1,
+  //       children: List.generate(
+  //         codeLines.length,
+  //         (lineIndex) {
+  //           int lineNr = lineIndex + 1;
+  //           bool highlightLine = _highlightedLineStart <= lineNr &&
+  //               lineNr <= _highlightedLineEnd;
+
+  //           if (highlightLine) {
+  //             var color = _highlightedLineStart != _highlightedLineEnd
+  //                 ? Colors.yellowAccent
+  //                 : Colors.greenAccent;
+  //             return TextSpan(
+  //               text: '${codeLines[lineIndex]}\n',
+  //               style: Theme.of(context).textTheme.subtitle1.copyWith(
+  //                     backgroundColor: color,
+  //                   ),
+  //             );
+  //           }
+
+  //           bool highlightError = _highlightedErrorLine == lineNr;
+  //           if (highlightError) {
+  //             return TextSpan(
+  //               text: '${codeLines[lineIndex]}\n',
+  //               style: Theme.of(context).textTheme.subtitle1.copyWith(
+  //                     backgroundColor: Colors.redAccent,
+  //                   ),
+  //             );
+  //           }
+
+  //           return TextSpan(
+  //             text: '${codeLines[lineIndex]}\n',
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+
+  //   if (_highlightedErrorLine > 0) {
+  //     return GestureDetector(
+  //       behavior: HitTestBehavior.opaque,
+  //       onTap: () {
+  //         // start editing program again after an error has occurred
+  //         setState(() {
+  //           _highlightedErrorLine = -1;
+  //         });
+  //       },
+  //       child: editor,
+  //     );
+  //   }
+  //   return editor;
+  // }
 }

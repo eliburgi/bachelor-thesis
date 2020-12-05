@@ -35,7 +35,7 @@ class MainScaffoldState extends State<MainScaffold> {
 
     // load the source code of the selected sample program
     var program = EXAMPLE_PROGRAMS[index];
-    codePanelKey.currentState.setProgramCode(program['src']);
+    codePanelKey.currentState.setSourceCode(program['src']);
   }
 
   void enableLogs(bool enable) {
@@ -53,7 +53,7 @@ class MainScaffoldState extends State<MainScaffold> {
     // clear the console
     consolePanelKey.currentState.clear();
 
-    var programCode = codePanelKey.currentState.programCode;
+    var programCode = codePanelKey.currentState.sourceCode;
 
     // print an error on the console if the program code is empty
     if (programCode.trim().isEmpty) {

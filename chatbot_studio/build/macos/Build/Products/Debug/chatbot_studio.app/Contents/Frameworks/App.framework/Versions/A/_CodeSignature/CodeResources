@@ -18,7 +18,7 @@
 		</data>
 		<key>Resources/flutter_assets/NOTICES</key>
 		<data>
-		wdZeG4upFkzJZTVCHzmGgDrdmoQ=
+		akM9JAe7MEvYvNIao0JkgR/ayi0=
 		</data>
 		<key>Resources/flutter_assets/fonts/MaterialIcons-Regular.otf</key>
 		<data>
@@ -26,11 +26,11 @@
 		</data>
 		<key>Resources/flutter_assets/isolate_snapshot_data</key>
 		<data>
-		/MjHMg3vYs9mjk9SMgdGxCmpatI=
+		NOZp5+Sb+W163C0l+HnGFylcPy8=
 		</data>
 		<key>Resources/flutter_assets/kernel_blob.bin</key>
 		<data>
-		t4vUYC51SIu+aHBIF87g8qHM6fc=
+		NbvjvB8NxXQNcCtyMHis1DMkVd4=
 		</data>
 		<key>Resources/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf</key>
 		<data>
@@ -38,7 +38,7 @@
 		</data>
 		<key>Resources/flutter_assets/vm_snapshot_data</key>
 		<data>
-		NOtYfN3z+I2hVs5KMWUXOHqJVjw=
+		hPlSq/KruUvRzpHiAzsmrFsfZcQ=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -80,11 +80,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			wdZeG4upFkzJZTVCHzmGgDrdmoQ=
+			akM9JAe7MEvYvNIao0JkgR/ayi0=
 			</data>
 			<key>hash2</key>
 			<data>
-			jXhoKS5cXHbwind3hg0W7piW5StIVZhnzPiqNQXg93Y=
+			PL0XmgyxeByK5QkREL3E+VKMoiRkJj+L0IOpJku5rN8=
 			</data>
 		</dict>
 		<key>Resources/flutter_assets/fonts/MaterialIcons-Regular.otf</key>
@@ -102,22 +102,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			/MjHMg3vYs9mjk9SMgdGxCmpatI=
+			NOZp5+Sb+W163C0l+HnGFylcPy8=
 			</data>
 			<key>hash2</key>
 			<data>
-			vwqbUiZ4TiIPKFSE9HhexiSJHDmDewHGXsOzFvaYRxE=
+			j02oKu4elWyoi0qoLiW673di6yKvNy5pSNR9xDB+xNA=
 			</data>
 		</dict>
 		<key>Resources/flutter_assets/kernel_blob.bin</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			t4vUYC51SIu+aHBIF87g8qHM6fc=
+			NbvjvB8NxXQNcCtyMHis1DMkVd4=
 			</data>
 			<key>hash2</key>
 			<data>
-			QBGvTcuhDuQZszBR3NNT5A79fFIFfFRJbtA+khIDiH0=
+			hpZkx7O/Km0kq7fa8MALf56ZL5sH3r+cKFfs915u05s=
 			</data>
 		</dict>
 		<key>Resources/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf</key>
@@ -135,11 +135,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			NOtYfN3z+I2hVs5KMWUXOHqJVjw=
+			hPlSq/KruUvRzpHiAzsmrFsfZcQ=
 			</data>
 			<key>hash2</key>
 			<data>
-			oMoNdA7jBfsUyjl8qVHsFgYNRrS9Stgog67jZINOWQc=
+			YDpuE9V2CpF8fIX6bFmv1DJz1mhwC2cvSa5qeDLr778=
 			</data>
 		</dict>
 	</dict>
