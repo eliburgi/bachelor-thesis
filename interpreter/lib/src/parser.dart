@@ -519,7 +519,7 @@ class Parser {
     _eat();
   }
 
-  /// Consumes the current token and assigns the next token.
+  /// Consumes the current token and read the next token.
   void _eat() {
     _prevToken = _currentToken;
     _currentToken = _nextToken;

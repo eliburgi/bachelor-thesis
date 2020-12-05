@@ -3,7 +3,7 @@ import 'package:interpreter/src/util.dart';
 
 /// Responsible for the lexogrphical analysis.
 ///
-/// The lexo... analysis represents the first step of every compiler
+/// The lexographic analysis represents the first step of every compiler
 /// or interpreter. The goal of this step is to transform the raw program
 /// code (stream of characters) into a stream of tokens.
 /// A token represents # todo
@@ -47,10 +47,7 @@ class Lexer {
     'hasTag': TokenType.hasTag,
   };
 
-  Lexer(
-    this.program, {
-    this.logPrinter,
-  }) {
+  Lexer(this.program, {this.logPrinter}) {
     // init state by reading the first character
     _readNextCharacter();
   }
