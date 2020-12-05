@@ -161,6 +161,9 @@ class Parser {
         case TokenType.wait:
           statement = _parseWaitStatement();
           break;
+        case TokenType.action:
+          statement = _parseActionStatement();
+          break;
         case TokenType.input:
           statement = _parseInputStatement();
           break;
@@ -188,6 +191,7 @@ class Parser {
         type == TokenType.endFlow ||
         type == TokenType.send ||
         type == TokenType.wait ||
+        type == TokenType.action ||
         type == TokenType.input ||
         type == TokenType.if_);
 
@@ -429,6 +433,77 @@ class Parser {
         break;
       default:
         _error('Invalid trigger type in wait statement: ${_currentToken.type}');
+        break;
+    }
+
+    node.lineEnd = _prevToken.line;
+    return node;
+  }
+
+  ASTNode _parseActionStatement() {
+    _log('_parseActionStatement - called');
+
+    var node = ActionStatementNode();
+
+    // 'increment' STRING 'by' INTEGER
+    // | 'decrement' STRING 'by' INTEGER
+    // | 'set' STRING 'to' INTEGER
+    // | 'addTag' STRING
+    // | 'removeTag' STRING
+    // | 'clearTags'
+
+    // an action statement must start with the action keyword
+    node.lineStart = _currentToken.line;
+    _checkToken(TokenType.action);
+
+    // an action statement must specify a action type
+    switch (_currentToken.type) {
+      case TokenType.increment:
+        _eat();
+        node.actionType = ActionType.increment;
+        _checkToken(TokenType.string);
+        node.name = _prevToken.value;
+        _checkToken(TokenType.by);
+        _checkToken(TokenType.integer);
+        node.value = _prevToken.value;
+        break;
+      case TokenType.decrement:
+        _eat();
+        node.actionType = ActionType.decrement;
+        _checkToken(TokenType.string);
+        node.name = _prevToken.value;
+        _checkToken(TokenType.by);
+        _checkToken(TokenType.integer);
+        node.value = _prevToken.value;
+        break;
+      case TokenType.set_:
+        _eat();
+        node.actionType = ActionType.set_;
+        _checkToken(TokenType.string);
+        node.name = _prevToken.value;
+        _checkToken(TokenType.to);
+        _checkToken(TokenType.integer);
+        node.value = _prevToken.value;
+        break;
+      case TokenType.addTag:
+        _eat();
+        node.actionType = ActionType.addTag;
+        _checkToken(TokenType.string);
+        node.name = _prevToken.value;
+        break;
+      case TokenType.removeTag:
+        _eat();
+        node.actionType = ActionType.removeTag;
+        _checkToken(TokenType.string);
+        node.name = _prevToken.value;
+        break;
+      case TokenType.clearTags:
+        _eat();
+        node.actionType = ActionType.clearTags;
+        break;
+      default:
+        _error(
+            'Invalid action type in action statement: ${_currentToken.type}');
         break;
     }
 

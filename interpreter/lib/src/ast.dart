@@ -417,6 +417,69 @@ class WaitStatementNode extends ASTNode {
   }
 }
 
+enum ActionType {
+  increment, // increment a counter by some value
+  decrement, // decrement a counter by some value
+  set_, // set a counter to some value
+  addTag, // adds a new tag name
+  removeTag, // removes a tag name
+  clearTags, // clears all tag names
+}
+
+class ActionStatementNode extends ASTNode {
+  /// Which type of action should be performed.
+  ActionType actionType;
+
+  /// The name of a counter or tag (depending on `actionType`).
+  /// Will be `null` for [ActionType.clearTags].
+  String name;
+
+  /// The value for incrementing/decrementing/setting a counter.
+  /// Otherwise `null`.
+  int value;
+
+  @override
+  Future<void> execute(RuntimeContext context) async {
+    super.execute(context);
+
+    log(context, 'execute - called - ACTION [type=$actionType]');
+
+    // perform the actual action
+    switch (actionType) {
+      case ActionType.increment:
+        var counter = context.counters[name];
+        if (counter == null) {
+          error('Counter $name does not exist!');
+        }
+        counter.value += value;
+        break;
+      case ActionType.decrement:
+        var counter = context.counters[name];
+        if (counter == null) {
+          error('Counter $name does not exist!');
+        }
+        counter.value -= value;
+        break;
+      case ActionType.set_:
+        var counter = context.counters[name];
+        if (counter == null) {
+          error('Counter $name does not exist!');
+        }
+        counter.value = value;
+        break;
+      case ActionType.addTag:
+        context.tags.add(name);
+        break;
+      case ActionType.removeTag:
+        context.tags.remove(name);
+        break;
+      case ActionType.clearTags:
+        context.tags.clear();
+        break;
+    }
+  }
+}
+
 enum InputType { singleChoice }
 
 class InputStatementNode extends ASTNode {

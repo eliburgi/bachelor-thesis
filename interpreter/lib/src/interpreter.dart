@@ -89,6 +89,8 @@ class RuntimeContext {
   final NodeVisitedCallback onNodeVisited;
 
   /// Whether the interpretation has been canceled.
+  ///
+  /// If `true` an error will be thrown if trying to run an AST node.
   bool canceled = false;
 
   /// A lookup table that contains references to all flows with their
@@ -121,6 +123,10 @@ class RuntimeContext {
   ///
   /// The name of the counter is used as a key.
   Map<String, Counter> counters = {};
+
+  /// Contains all active tags that have been added via 'action addTag ...'
+  /// statement.
+  Set<String> tags = {};
 
   /// Whether messages sent via 'send' statement should be delayed dynamically.
   ///
