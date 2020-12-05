@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:bubble/bubble.dart';
 import 'package:flutter/material.dart';
@@ -9,10 +8,6 @@ import 'package:transparent_image/transparent_image.dart';
 
 // used for state management
 final chatbotPanelKey = GlobalKey<ChatbotPanelState>();
-
-class SingleChoiceMessage extends Message {
-  VoidCallback onChoiceSelected;
-}
 
 class ChatbotPanel extends StatefulWidget {
   ChatbotPanel({
@@ -28,21 +23,27 @@ class ChatbotPanel extends StatefulWidget {
 }
 
 class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
+  // list of chat messages
+  // chat may also contain input items therefore I use dynamic type here
+  // instead of Message type
+  List<Message> _messages = [];
+  var _scrollController = ScrollController();
+
+  Completer<bool> _waitForClickCompleter;
+  Completer<String> _waitForEventCompleter;
+  String _waitForEventName;
+
   @override
   void clear() {
     if (_messages.isEmpty) return;
-
-    setState(() {
-      _messages.clear();
-    });
+    setState(() => _messages.clear());
     _scrollController.jumpTo(0.0);
   }
 
   @override
   void sendMessage(Message message) {
-    setState(() {
-      _messages.add(message);
-    });
+    // add the message to the chat
+    setState(() => _messages.add(message));
 
     // scroll to the bottom message if automatic scrolling is enabled
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -58,20 +59,18 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
   @override
   void removeLastMessage() {
     if (_messages.isEmpty) return;
-
-    setState(() {
-      _messages.removeLast();
-    });
+    setState(() => _messages.removeLast());
   }
 
   @override
   Future<UserInputResponse> waitForInput(UserInput input) {
     var completer = Completer<UserInputResponse>();
 
-    var inputItem;
     switch (input.type) {
       case UserInputType.singleChoice:
-        inputItem = _UserInputItem(
+        // add the input request to the bottom of the chat
+        // e.g. for single choice this is a list of buttons
+        sendMessage(UserInputMessage(
           input: input,
           onSingleChoiceSelected: (index) {
             var response = UserInputResponse.singleChoice(
@@ -80,24 +79,19 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
 
             // update chat
             setState(() {
-              assert(_messages.last is _UserInputItem);
+              assert(_messages.last is UserInputMessage);
               _messages.removeLast();
-              _messages.add(_UserInputItem(input: input, response: response));
+              _messages.add(UserInputMessage(input: input, response: response));
             });
 
             // notify the interpreter about the response
             completer.complete(response);
           },
-        );
+        ));
         break;
     }
 
-    // add the input request to the bottom of the chat
-    // e.g. for single choice this is a list of buttons
-    setState(() {
-      _messages.add(inputItem);
-    });
-
+    // completes when the user responds with some input
     return completer.future;
   }
 
@@ -136,16 +130,6 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
     }
   }
 
-  // list of chat messages
-  // chat may also contain input items therefore I use dynamic type here
-  // instead of Message type
-  List<dynamic> _messages = [];
-  var _scrollController = ScrollController();
-
-  Completer<bool> _waitForClickCompleter;
-  Completer<String> _waitForEventCompleter;
-  String _waitForEventName;
-
   @override
   void dispose() {
     _scrollController.dispose();
@@ -159,10 +143,17 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
         controller: _scrollController,
         itemCount: _messages.length,
         itemBuilder: (context, index) {
+          var message = _messages[index];
+
+          // check if it is an input message
+          if (message is UserInputMessage) {
+            return _UserInputItem(message);
+          }
+
           // its a normal chat message
-          if (_messages[index] is Message) {
+          if (message is Message) {
             var item = _MessageItem(
-              message: _messages[index],
+              message: message,
               prevMessage: index > 0
                   ? ((_messages[index - 1] is Message)
                       ? _messages[index - 1]
@@ -176,11 +167,6 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
               );
             }
             return item;
-          }
-
-          // its a user input request
-          if (_messages[index] is _UserInputItem) {
-            return _messages[index];
           }
 
           throw StateError('Unknown chat message!');
@@ -373,8 +359,8 @@ class _MessageItem extends StatelessWidget {
   }
 }
 
-class _UserInputItem extends StatelessWidget {
-  _UserInputItem({
+class UserInputMessage extends Message {
+  UserInputMessage({
     @required this.input,
     this.response,
     this.onSingleChoiceSelected,
@@ -382,37 +368,42 @@ class _UserInputItem extends StatelessWidget {
 
   final UserInput input;
   final UserInputResponse response;
-
   final Function(int) onSingleChoiceSelected;
+}
+
+class _UserInputItem extends StatelessWidget {
+  _UserInputItem(this.message);
+
+  final UserInputMessage message;
 
   @override
   Widget build(BuildContext context) {
     Widget child;
-    switch (input.type) {
+    switch (message.input.type) {
       case UserInputType.singleChoice:
         child = Scrollbar(
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: List.generate(
-              input.singleChoiceTitles.length,
+              message.input.singleChoiceTitles.length,
               (index) {
                 var button = FlatButton(
-                  color: response != null
-                      ? (index == response.selectedChoice
+                  color: message.response != null
+                      ? (index == message.response.selectedChoice
                           ? Colors.blue
                           : Colors.blue.withOpacity(0.5))
                       : Colors.blue,
-                  onPressed: response != null
+                  onPressed: message.response != null
                       ? () {}
-                      : () => onSingleChoiceSelected(index),
+                      : () => message.onSingleChoiceSelected(index),
                   child: Text(
-                    input.singleChoiceTitles[index],
+                    message.input.singleChoiceTitles[index],
                     style: Theme.of(context).textTheme.button.copyWith(
                           color: Colors.white,
                         ),
                   ),
                 );
-                if (index < input.singleChoiceTitles.length - 1) {
+                if (index < message.input.singleChoiceTitles.length - 1) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 12.0),
                     child: button,
