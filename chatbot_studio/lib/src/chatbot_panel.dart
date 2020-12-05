@@ -215,7 +215,7 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
                   if (_waitForEventCompleter != null &&
                       !_waitForEventCompleter.isCompleted)
                     IconButton(
-                      tooltip: 'Debug: Trigger Event',
+                      tooltip: 'Debug: Trigger Event ($_waitForEventName)',
                       icon: Icon(Icons.edit, color: Colors.black),
                       onPressed: () {
                         handleTriggerEvent(_waitForEventName);

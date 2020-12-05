@@ -138,4 +138,47 @@ flow 'loop'
   startFlow 'main'
 ''',
   },
+  {
+    'name': 'Hello Action',
+    'src': '''
+set delay 1000
+create counter 'myCounter'
+
+flow 'main'
+  send text 'Let´s have sun fun with actions! Shall we?'
+  send text '1) You can increment the value of a counter'
+  action increment 'myCounter' by 50
+  send text 'The new value of this counter: TODO'
+  wait click 1
+
+  send text '2) You can decrement the value of a counter'
+  action decrement 'myCounter' by 20
+  send text 'The new value of this counter: TODO'
+  wait click 1
+
+  send text '3) You can set a counter to a value'
+  action set 'myCounter' to 7
+  send text 'The new value of this counter: TODO'
+  wait click 1
+
+  send text '4) You can add new tags'
+  action addTag 'pro-user'
+  action addTag 'righteousness'
+  action addTag 'full-of-grace'
+  send text 'Current tags: TODO'
+  wait click 1
+
+  send text '5) You can remove tags again'
+  action removeTag 'pro-user'
+  send text 'Current tags: TODO'
+  wait click 1
+
+  send text '6) You clear all tags'
+  action clearTags
+  send text 'Current tags: TODO'
+  wait click 1
+
+  send text 'More actions are planed. So stay tuned :)'
+''',
+  },
 ];
