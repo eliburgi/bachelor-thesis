@@ -324,11 +324,14 @@ class SendStatementNode extends ASTNode {
     }
 
     // perform string interpolation
-    var interpolatedBody = messageBody.replaceAllMapped(r'\$[^\s]+', (match) {
+    var regex = RegExp(r"\$[^\s]+");
+    var interpolatedBody = messageBody.replaceAllMapped(regex, (match) {
       // start at start+1 as we do not want the $ in our template
       var template = messageBody.substring(match.start + 1, match.end);
+      log(context, 'TEMPLATE: $template');
+
       if (template == 'tags') {
-        return context.tags.fold('', (str, tag) => '$str,$tag');
+        return context.tags.toString();
       }
       if (context.counters.containsKey(template)) {
         var counterValue = context.counters[template].value;
