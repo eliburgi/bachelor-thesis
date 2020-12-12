@@ -116,7 +116,11 @@ class FlowNode extends ASTNode {
     context.openedFlowsStack.add(name);
 
     // execute the block
-    await block.execute(context);
+    try {
+      await block.execute(context);
+    } on EndFlowException {
+      log(context, 'Flow $name executed.');
+    }
 
     // make sure all sub-flows that this flow has opened with a startFlow
     // statement have already ended before this one
@@ -273,14 +277,15 @@ class StartFlowStatementNode extends ASTNode {
   }
 }
 
+class EndFlowException implements Exception {}
+
 class EndFlowStatementNode extends ASTNode {
   @override
   Future<void> execute(RuntimeContext context) {
     super.execute(context);
 
     log(context, 'execute - FORCEFULLY ENDING CURRENT FLOW');
-    // @see: FlowNode
-    return Future.value();
+    throw EndFlowException();
   }
 }
 
