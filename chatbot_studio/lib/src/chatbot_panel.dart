@@ -65,7 +65,6 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
   @override
   Future<UserInputResponse> waitForInput(UserInput input) {
     var completer = Completer<UserInputResponse>();
-
     switch (input.type) {
       case UserInputType.singleChoice:
         // add the input request to the bottom of the chat
@@ -90,7 +89,6 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
         ));
         break;
     }
-
     // completes when the user responds with some input
     return completer.future;
   }

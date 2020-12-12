@@ -181,4 +181,33 @@ flow 'main'
   send text 'More actions are planed. So stay tuned :)'
 ''',
   },
+  {
+    'name': 'Hello Conditions',
+    'src': '''
+create sender 'Laura B.'
+  avatarUrl = 'https://picsum.photos/id/1011/300/300'
+create counter 'myCounter'
+set sender 'Laura B.'
+set delay 700
+
+flow 'main'
+  send text 'I'
+  send text 'am'
+  send text 'infinite loop'
+  action increment 'myCounter' by 5
+  if counter 'myCounter' == 5
+    send text 'High five!'
+  if counter 'myCounter' > 0
+    send text 'It´s a positive number too!'
+  if counter 'myCounter' > 10
+    send text 'It´s a big number (not)'
+  else 
+    send text 'It´s a small number'
+  startFlow 'loop'
+
+flow 'loop'
+  send text 'Oh really?'
+  startFlow 'main'
+''',
+  },
 ];

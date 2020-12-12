@@ -40,6 +40,40 @@
 			<key>uniqueIdentifier</key>
 			<string>B9F6C6F1-6A17-4F93-9D8E-20BD00A0EAF3</string>
 		</dict>
+		<key>E0C72D52-E06F-49C1-BFAF-9BF128AEEBCC</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>E0C72D52-E06F-49C1-BFAF-9BF128AEEBCC.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>S</string>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>Runner project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>Runner</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building workspace Runner with scheme Runner and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>629460258.72525001</real>
+			<key>timeStoppedRecording</key>
+			<real>629460275.04872</real>
+			<key>title</key>
+			<string>Building workspace Runner with scheme Runner and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>E0C72D52-E06F-49C1-BFAF-9BF128AEEBCC</string>
+		</dict>
 	</dict>
 </dict>
 </plist>
