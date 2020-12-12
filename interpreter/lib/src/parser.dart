@@ -91,8 +91,7 @@ class Parser {
     }
 
     // a flow must have a block of statements
-    var statements = _parseBlock();
-    node.statements = statements;
+    node.block = _parseBlock();
 
     node.lineEnd = _prevToken.line;
     return node;
@@ -122,18 +121,18 @@ class Parser {
     _checkToken(TokenType.string);
     node.name = _prevToken.value;
 
-    // a flow must have a block of statements
-    var statements = _parseBlock();
-    node.statements = statements;
+    // a flow must have a block
+    node.block = _parseBlock();
 
     node.lineEnd = _prevToken.line;
     return node;
   }
 
-  List<ASTNode> _parseBlock() {
+  BlockNode _parseBlock() {
     _log('_parseBlock - called');
 
-    var statements = <ASTNode>[];
+    var node = BlockNode();
+    node.lineStart = _currentToken.line;
 
     // a block must start with a NEWLINE
     _checkToken(TokenType.newLine);
@@ -142,6 +141,7 @@ class Parser {
     _checkToken(TokenType.indent);
 
     // a block must at least contain one statement
+    List<ASTNode> statements = [];
     TokenType type = _currentToken.type;
     do {
       var statement;
@@ -198,7 +198,9 @@ class Parser {
     // a block must end with a DEDENT
     _checkToken(TokenType.dedent);
 
-    return statements;
+    node.lineEnd = _prevToken.line;
+    node.statements = statements;
+    return node;
   }
 
   Map<String, dynamic> _parseParams() {
@@ -548,8 +550,7 @@ class Parser {
         // that is the reason why this grammar is not LL1 but LL2
         if (_currentToken.type == TokenType.newLine &&
             _nextToken.type == TokenType.indent) {
-          var statements = _parseBlock();
-          choice.statements = statements;
+          choice.block = _parseBlock();
         } else {
           _error('Choice does not contain any statements!');
         }
@@ -628,12 +629,12 @@ class Parser {
       _error('Invalid if statement: ${_currentToken.type}');
     }
 
-    node.thenStatements = _parseBlock();
+    node.thenBlock = _parseBlock();
     assert(_prevToken.type == TokenType.dedent);
 
     if (_currentToken.type == TokenType.else_) {
       _eat();
-      node.elseStatements = _parseBlock();
+      node.elseBlock = _parseBlock();
     }
 
     // -1 because it ends with a block and therefore

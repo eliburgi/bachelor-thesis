@@ -19,12 +19,14 @@ flow 'main'
       ProgramNode(
         mainFlow: FlowNode(
           name: 'main',
-          statements: [
-            SendStatementNode(
-              messageType: SendMessageType.text,
-              messageBody: 'Hello World',
-            ),
-          ],
+          block: BlockNode(
+            statements: [
+              SendStatementNode(
+                messageType: SendMessageType.text,
+                messageBody: 'Hello World',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -48,20 +50,22 @@ flow 'main'
       ProgramNode(
         mainFlow: FlowNode(
           name: 'main',
-          statements: [
-            SendStatementNode(
-              messageType: SendMessageType.text,
-              messageBody: 'Hello World',
-            ),
-            SendStatementNode(
-              messageType: SendMessageType.image,
-              messageBody: 'img.png',
-            ),
-            SendStatementNode(
-              messageType: SendMessageType.audio,
-              messageBody: 'audio.mp3',
-            ),
-          ],
+          block: BlockNode(
+            statements: [
+              SendStatementNode(
+                messageType: SendMessageType.text,
+                messageBody: 'Hello World',
+              ),
+              SendStatementNode(
+                messageType: SendMessageType.image,
+                messageBody: 'img.png',
+              ),
+              SendStatementNode(
+                messageType: SendMessageType.audio,
+                messageBody: 'audio.mp3',
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -92,17 +96,19 @@ flow 'main'
         ],
         mainFlow: FlowNode(
           name: 'main',
-          statements: [
-            SendStatementNode(
-              messageType: SendMessageType.event,
-              messageBody: 'start-task',
-              params: {'payload': 123},
-            ),
-            SendStatementNode(
-              messageType: SendMessageType.text,
-              messageBody: 'a',
-            ),
-          ],
+          block: BlockNode(
+            statements: [
+              SendStatementNode(
+                messageType: SendMessageType.event,
+                messageBody: 'start-task',
+                params: {'payload': 123},
+              ),
+              SendStatementNode(
+                messageType: SendMessageType.text,
+                messageBody: 'a',
+              ),
+            ],
+          ),
         ),
       ),
     );

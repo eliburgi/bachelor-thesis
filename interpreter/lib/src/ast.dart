@@ -100,11 +100,11 @@ class ProgramNode extends ASTNode {
 class FlowNode extends ASTNode {
   FlowNode({
     this.name,
-    this.statements,
+    this.block,
   });
 
   String name = '';
-  List<ASTNode> statements = [];
+  BlockNode block;
 
   @override
   Future<void> execute(RuntimeContext context) async {
@@ -115,15 +115,8 @@ class FlowNode extends ASTNode {
     // add this flow to the stack because it is now open
     context.openedFlowsStack.add(name);
 
-    // execute all statements of this flow
-    for (var statement in statements) {
-      await statement.execute(context);
-
-      // end the flow if an endFlow statement was previously executed
-      if (statement is EndFlowStatementNode) {
-        break;
-      }
-    }
+    // execute the block
+    await block.execute(context);
 
     // make sure all sub-flows that this flow has opened with a startFlow
     // statement have already ended before this one
@@ -134,19 +127,27 @@ class FlowNode extends ASTNode {
 
     log(context, 'execute - called - FLOW $name');
   }
+}
+
+class BlockNode extends ASTNode {
+  BlockNode({this.statements});
+
+  List<ASTNode> statements = [];
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return false;
+  Future<void> execute(RuntimeContext context) async {
+    super.execute(context);
+
+    // execute all statements of this block
+    for (var statement in statements) {
+      await statement.execute(context);
+
+      // end the flow if an endFlow statement was just executed
+      if (statement is EndFlowStatementNode) {
+        break;
+      }
     }
-    return other is FlowNode &&
-        this.name == other.name &&
-        this.statements == other.statements;
   }
-
-  @override
-  int get hashCode => hashList([this.name]);
 }
 
 enum EntityType { sender, counter }
@@ -536,19 +537,12 @@ class InputStatementNode extends ASTNode {
 
 class ChoiceNode extends ASTNode {
   String title;
-  List<ASTNode> statements = [];
+  BlockNode block;
 
   @override
   Future<void> execute(RuntimeContext context) async {
     super.execute(context);
-
-    log(context, 'execute - called');
-
-    for (var statement in statements) {
-      await statement.execute(context);
-    }
-
-    log(context, 'execute - finished');
+    await block.execute(context);
   }
 }
 
@@ -559,8 +553,8 @@ enum ConditionOp { lt, lte, gt, gte, eq }
 class ConditionNode extends ASTNode {
   ConditionType type;
 
-  List<ASTNode> thenStatements;
-  List<ASTNode> elseStatements; // optional
+  BlockNode thenBlock;
+  BlockNode elseBlock; // optional
 
   String name; // of counter or tag
   ConditionOp op; // for comparing a counter
@@ -607,14 +601,10 @@ class ConditionNode extends ASTNode {
 
     if (isTrue) {
       log(context, 'executing `then` path');
-      for (var statement in thenStatements) {
-        await statement.execute(context);
-      }
-    } else if (elseStatements != null) {
+      await thenBlock.execute(context);
+    } else if (elseBlock != null) {
       log(context, 'executing `else` path');
-      for (var statement in elseStatements) {
-        await statement.execute(context);
-      }
+      await elseBlock.execute(context);
     } else {
       log(context, 'no `else` path provided');
     }
