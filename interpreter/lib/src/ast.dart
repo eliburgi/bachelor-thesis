@@ -551,3 +551,72 @@ class ChoiceNode extends ASTNode {
     log(context, 'execute - finished');
   }
 }
+
+enum ConditionType { counter, hasTag }
+
+enum ConditionOp { lt, lte, gt, gte, eq }
+
+class ConditionNode extends ASTNode {
+  ConditionType type;
+
+  List<ASTNode> thenStatements;
+  List<ASTNode> elseStatements; // optional
+
+  String name; // of counter or tag
+  ConditionOp op; // for comparing a counter
+  int value; // the value that a counter is compared against
+
+  @override
+  Future<void> execute(RuntimeContext context) async {
+    super.execute(context);
+
+    bool isTrue = false;
+    switch (type) {
+      case ConditionType.counter:
+        assert(name != null);
+        assert(op != null);
+        assert(value != null);
+
+        var counter = context.counters[name];
+        if (counter == null) {
+          error('ConditionNode: Cannot find counter $name');
+        }
+        switch (op) {
+          case ConditionOp.lt:
+            isTrue = counter.value < value;
+            break;
+          case ConditionOp.lte:
+            isTrue = counter.value <= value;
+            break;
+          case ConditionOp.gt:
+            isTrue = counter.value > value;
+            break;
+          case ConditionOp.gte:
+            isTrue = counter.value >= value;
+            break;
+          case ConditionOp.eq:
+            isTrue = counter.value == value;
+            break;
+        }
+        break;
+      case ConditionType.hasTag:
+        assert(name != null);
+        isTrue = context.tags.contains(name);
+        break;
+    }
+
+    if (isTrue) {
+      log(context, 'executing `then` path');
+      for (var statement in thenStatements) {
+        await statement.execute(context);
+      }
+    } else if (elseStatements != null) {
+      log(context, 'executing `else` path');
+      for (var statement in elseStatements) {
+        await statement.execute(context);
+      }
+    } else {
+      log(context, 'no `else` path provided');
+    }
+  }
+}

@@ -100,6 +100,14 @@ class Lexer {
 
     // skip whitespaces
     while (Util.isWhiteSpace(_currentChar)) {
+      //* Fixes a bug that is caused by trailing whitespaces in a line.
+      //* Trailing whitespaces caused the lexer to get stuck into this
+      //* loop and ignore NEWLINEs (they are detected as whitespace too).
+      if (_currentChar == NEWLINE) {
+        // handle the newline (see above)
+        // important for indent/dedent detection
+        return next();
+      }
       _log('next - skipping whitespace');
       _readNextCharacter();
     }
@@ -304,6 +312,9 @@ class Lexer {
   /// The current column the lexer is at.
   int _col = 0;
 
+  //! TODO
+  String _lineStr;
+
   /// Keeps track of how often a tabulator has been used
   /// to indent the line at the start.
   ///
@@ -332,10 +343,12 @@ class Lexer {
     _currentChar = program[_characterIndex];
     _characterIndex++;
     _col++;
+    _lineStr = '$_lineStr$_currentChar';
 
     if (_currentChar == NEWLINE) {
       _line++;
       _col = 0;
+      _lineStr = '';
     }
   }
 

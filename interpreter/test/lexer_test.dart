@@ -297,6 +297,8 @@ flow 'main'
     String program = '''
 create sender 'AB'
   authorId = '#1'
+
+
 flow 'main'
   send event 'start-task'
     payload = 123
@@ -334,6 +336,60 @@ flow 'main'
       Token(type: TokenType.name, value: 'payload'),
       Token(type: TokenType.assign),
       Token(type: TokenType.integer, value: 123),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.dedent),
+      Token(type: TokenType.dedent),
+      Token(type: TokenType.eof),
+    ]);
+  });
+
+  test('conditions (if/else)', () {
+    String program = '''
+create counter 'myCounter'
+
+flow 'main'
+  if counter 'myCounter' > 10
+    send text 'Large'
+  else 
+    send text 'Small'
+''';
+
+    var lexer = Lexer(program);
+    var parsedTokens = <Token>[];
+    var token = lexer.next();
+    while (token.type != TokenType.eof) {
+      parsedTokens.add(token);
+      token = lexer.next();
+    }
+    parsedTokens.add(token);
+
+    expect(parsedTokens, [
+      Token(type: TokenType.create),
+      Token(type: TokenType.counter),
+      Token(type: TokenType.string, value: 'myCounter'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.flow),
+      Token(type: TokenType.string, value: 'main'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.indent),
+      Token(type: TokenType.if_),
+      Token(type: TokenType.counter),
+      Token(type: TokenType.string, value: 'myCounter'),
+      Token(type: TokenType.greaterThan),
+      Token(type: TokenType.integer, value: 10),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.indent),
+      Token(type: TokenType.send),
+      Token(type: TokenType.text),
+      Token(type: TokenType.string, value: 'Large'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.dedent),
+      Token(type: TokenType.else_),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.indent),
+      Token(type: TokenType.send),
+      Token(type: TokenType.text),
+      Token(type: TokenType.string, value: 'Small'),
       Token(type: TokenType.newLine),
       Token(type: TokenType.dedent),
       Token(type: TokenType.dedent),

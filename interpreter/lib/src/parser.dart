@@ -175,9 +175,9 @@ class Parser {
           break;
       }
 
-      // a statement must end with a NEWLINE
-      // BUT only if the statement did not already contain a NEWLINE and DEDENT
-      // such as send statement with params at the end
+      // A statement must end with a NEWLINE.
+      // BUT only if the statement did not already contain a NEWLINE
+      // and DEDENT such as send statement with params at the end.
       if (_prevToken.type != TokenType.dedent) {
         _checkToken(TokenType.newLine);
       }
@@ -575,8 +575,72 @@ class Parser {
   ASTNode _parseIfStatement() {
     _log('_parseIfStatement - called');
 
-    // todo
-    throw UnimplementedError();
+    var node = ConditionNode();
+
+    // a condition statement always starts with the if keyword
+    _checkToken(TokenType.if_);
+
+    node.lineStart = _currentToken.line;
+    if (_currentToken.type == TokenType.counter) {
+      node.type = ConditionType.counter;
+      _eat();
+
+      // the name of the counter
+      _checkToken(TokenType.string);
+      node.name = _prevToken.value;
+
+      // the type of conditional operation
+      ConditionOp op;
+      switch (_currentToken.type) {
+        case TokenType.lessThan:
+          op = ConditionOp.lt;
+          break;
+        case TokenType.lessThanEqual:
+          op = ConditionOp.lte;
+          break;
+        case TokenType.greaterThan:
+          op = ConditionOp.gt;
+          break;
+        case TokenType.greaterThanEqual:
+          op = ConditionOp.gte;
+          break;
+        case TokenType.equals:
+          op = ConditionOp.eq;
+          break;
+        default:
+          _error('Invalid conditional operator: ${_currentToken.type}');
+          break;
+      }
+      node.op = op;
+      _eat();
+
+      // the int value the counter is compared against
+      _checkToken(TokenType.integer);
+      node.value = _prevToken.value;
+    } else if (_currentToken.type == TokenType.hasTag) {
+      node.type = ConditionType.hasTag;
+      _eat();
+
+      // the name of the tag
+      _checkToken(TokenType.string);
+      node.name = _prevToken.value;
+    } else {
+      _error('Invalid if statement: ${_currentToken.type}');
+    }
+
+    node.thenStatements = _parseBlock();
+    assert(_prevToken.type == TokenType.dedent);
+
+    if (_currentToken.type == TokenType.else_) {
+      _eat();
+      node.elseStatements = _parseBlock();
+    }
+
+    // -1 because it ends with a block and therefore
+    // _prevToken.line is the position of the dedent which is one line
+    // further than the if statement actually spans
+    node.lineEnd = _prevToken.line - 1;
+    return node;
   }
 
   Token _prevToken;
