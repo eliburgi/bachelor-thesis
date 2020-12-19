@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:interpreter/interpreter.dart';
 
@@ -18,14 +21,27 @@ class MainScaffold extends StatefulWidget {
 }
 
 class MainScaffoldState extends State<MainScaffold> {
-  /// Opens a file and loads its content as program.
-  void openFile() {}
+  /// Import the source code from a file.
+  Future importFromFile() async {
+    FilePickerResult result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      var file = File(result.files.single.path);
+      loadProgram(file.readAsStringSync());
+    }
+  }
 
-  /// Saves the current program as a file.
-  void saveFile() {}
+  /// Exports the current source code to a file.
+  Future exportToFile() async {
+    FilePickerResult result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      var sourceCode = codePanelKey.currentState.sourceCode;
 
-  /// Loads a program from the [EXAMPLE_PROGRAMS] array.
-  void loadExampleProgram(int index) {
+      var file = File(result.files.single.path);
+      file.writeAsStringSync(sourceCode);
+    }
+  }
+
+  void loadProgram(String sourceCode) {
     // stop the currently running program (if any)
     stopProgram();
 
@@ -33,9 +49,15 @@ class MainScaffoldState extends State<MainScaffold> {
     consolePanelKey.currentState.clear();
     chatbotPanelKey.currentState.clear();
 
+    // set the editor´s source code
+    codePanelKey.currentState.setSourceCode(sourceCode);
+  }
+
+  /// Loads a program from the [EXAMPLE_PROGRAMS] array.
+  void loadExampleProgram(int index) {
     // load the source code of the selected sample program
-    var program = EXAMPLE_PROGRAMS[index];
-    codePanelKey.currentState.setSourceCode(program['src']);
+    var sampleProgram = EXAMPLE_PROGRAMS[index];
+    loadProgram(sampleProgram['src']);
   }
 
   void enableLogs(bool enable) {
@@ -189,6 +211,20 @@ class ToolBar extends StatelessWidget {
       color: Colors.grey[100],
       child: Row(
         children: [
+          IconButton(
+            tooltip: 'Import',
+            icon: Icon(Icons.file_upload),
+            onPressed: () {
+              mainScaffoldKey.currentState.importFromFile();
+            },
+          ),
+          IconButton(
+            tooltip: 'Export',
+            icon: Icon(Icons.file_download),
+            onPressed: () {
+              mainScaffoldKey.currentState.exportToFile();
+            },
+          ),
           PopupMenuButton(
             tooltip: 'Example Programs',
             onSelected: (index) {

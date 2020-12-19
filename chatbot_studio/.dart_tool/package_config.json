@@ -56,10 +56,22 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "file_picker",
+      "rootUri": "file:///Users/elias.burgstaller/Desktop/development/flutter/.pub-cache/hosted/pub.dartlang.org/file_picker-2.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.0"
+    },
+    {
       "name": "flutter",
       "rootUri": "file:///Users/elias.burgstaller/Desktop/development/flutter/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_plugin_android_lifecycle",
+      "rootUri": "file:///Users/elias.burgstaller/Desktop/development/flutter/.pub-cache/hosted/pub.dartlang.org/flutter_plugin_android_lifecycle-1.0.11",
+      "packageUri": "lib/",
+      "languageVersion": "2.1"
     },
     {
       "name": "flutter_spinkit",
@@ -74,10 +86,22 @@
       "languageVersion": "2.12"
     },
     {
+      "name": "flutter_web_plugins",
+      "rootUri": "file:///Users/elias.burgstaller/Desktop/development/flutter/packages/flutter_web_plugins",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "interpreter",
       "rootUri": "../../interpreter",
       "packageUri": "lib/",
       "languageVersion": "2.7"
+    },
+    {
+      "name": "js",
+      "rootUri": "file:///Users/elias.burgstaller/Desktop/development/flutter/.pub-cache/hosted/pub.dartlang.org/js-0.6.3-nullsafety.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "matcher",
@@ -96,6 +120,12 @@
       "rootUri": "file:///Users/elias.burgstaller/Desktop/development/flutter/.pub-cache/hosted/pub.dartlang.org/path-1.8.0-nullsafety.3",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "plugin_platform_interface",
+      "rootUri": "file:///Users/elias.burgstaller/Desktop/development/flutter/.pub-cache/hosted/pub.dartlang.org/plugin_platform_interface-1.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.1"
     },
     {
       "name": "sky_engine",
@@ -164,7 +194,7 @@
       "languageVersion": "2.7"
     }
   ],
-  "generated": "2020-12-05T15:40:20.866255Z",
+  "generated": "2020-12-19T08:49:23.691413Z",
   "generator": "pub",
   "generatorVersion": "2.12.0-45.0.dev"
 }

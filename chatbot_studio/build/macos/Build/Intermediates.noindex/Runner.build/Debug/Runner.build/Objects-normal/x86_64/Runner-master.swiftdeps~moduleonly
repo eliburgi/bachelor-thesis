@@ -1,7 +1,7 @@
 version: "Apple Swift version 5.3 (swiftlang-1200.0.29.2 clang-1200.0.30.1)"
-options: "921c46c1394b1052d8c987d1196ab9f6"
-build_time: [1608366074, 228224000]
+options: "d325550cf0fd066e8a95fc5a536ee3ee"
+build_time: [1608392317, 645062000]
 inputs:
   "/Users/elias.burgstaller/Desktop/uni/bachelor-thesis/project/chatbot_studio/macos/Runner/MainFlutterWindow.swift": [1597322020, 0]
   "/Users/elias.burgstaller/Desktop/uni/bachelor-thesis/project/chatbot_studio/macos/Runner/AppDelegate.swift": [1597322020, 0]
-  "/Users/elias.burgstaller/Desktop/uni/bachelor-thesis/project/chatbot_studio/macos/Flutter/GeneratedPluginRegistrant.swift": [1608366061, 466217330]
+  "/Users/elias.burgstaller/Desktop/uni/bachelor-thesis/project/chatbot_studio/macos/Flutter/GeneratedPluginRegistrant.swift": [1608392296, 383638610]
