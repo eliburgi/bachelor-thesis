@@ -125,10 +125,16 @@ class ConsolePanelState extends State<ConsolePanel> {
           if (!_collapsed)
             Expanded(
               child: Scrollbar(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) => _messages[index],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 12.0,
+                  ),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) => _messages[index],
+                  ),
                 ),
               ),
             ),
