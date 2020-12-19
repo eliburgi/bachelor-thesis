@@ -176,8 +176,9 @@ class Parser {
       }
 
       // A statement must end with a NEWLINE.
-      // BUT only if the statement did not already contain a NEWLINE
-      // and DEDENT such as send statement with params at the end.
+      // BUT only if the same statement did not already contain a NEWLINE
+      // and DEDENT such as send statement with params at the end
+      // or a statement that ends with a block for example.
       if (_prevToken.type != TokenType.dedent) {
         _checkToken(TokenType.newLine);
       }
