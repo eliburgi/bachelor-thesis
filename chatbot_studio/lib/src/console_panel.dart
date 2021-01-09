@@ -78,7 +78,7 @@ class ConsolePanelState extends State<ConsolePanel> {
 
   // A list of all messages that are printed on the console.
   List<Text> _messages = <Text>[];
-  var _scrollController = ScrollController();
+  ScrollController _scrollController = ScrollController();
 
   // Whether the console panel is collapsed.
   // If collapsed, it will only render the small bar with the actions and no

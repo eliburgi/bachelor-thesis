@@ -1,6 +1,11 @@
-import 'dart:io';
+import 'dart:convert';
+import 'dart:js' as js;
+import 'dart:html' as html;
 
-import 'package:file_picker/file_picker.dart';
+import 'package:file_picker_cross/file_picker_cross.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// import 'package:file_picker_web/file_picker_web.dart' as webPicker;
+
 import 'package:flutter/material.dart';
 import 'package:interpreter/interpreter.dart';
 
@@ -21,23 +26,44 @@ class MainScaffold extends StatefulWidget {
 }
 
 class MainScaffoldState extends State<MainScaffold> {
+  html.File _file;
+
+  /// Whether the current source code has been imported from
+  /// a file.
+  bool get isImportedFromFile => _file != null;
+
   /// Import the source code from a file.
   Future importFromFile() async {
-    FilePickerResult result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      var file = File(result.files.single.path);
-      loadProgram(file.readAsStringSync());
-    }
+    // _file = await FilePicker.getFile(
+    //   allowedExtensions: ['ccml', 'txt'],
+    //   type: FileType.custom,
+    // );
+
+    // final reader = html.FileReader();
+    // reader.readAsText(_file);
+    // await reader.onLoad.first;
+
+    // String content = reader.result as String;
+    // loadProgram(content);
+
+    FilePickerCross file = await FilePickerCross.importFromStorage(
+      type: FileTypeCross.custom,
+      fileExtension: '.ccml, .txt',
+    );
+    String content = file.toBase64();
+    loadProgram(content);
   }
 
   /// Exports the current source code to a file.
   Future exportToFile() async {
-    FilePickerResult result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      var sourceCode = codePanelKey.currentState.sourceCode;
-
-      var file = File(result.files.single.path);
-      file.writeAsStringSync(sourceCode);
+    if (kIsWeb) {
+      // download the file to the user´s 'Downloads' folder (by default)
+      final sourceCode = codePanelKey.currentState.sourceCode;
+      final bytes = utf8.encode(sourceCode);
+      js.context.callMethod("webSaveAs", [
+        html.Blob([bytes]),
+        "test.ccml"
+      ]);
     }
   }
 
@@ -227,7 +253,7 @@ class ToolBar extends StatelessWidget {
           ),
           PopupMenuButton(
             tooltip: 'Example Programs',
-            onSelected: (index) {
+            onSelected: (int index) {
               mainScaffoldKey.currentState.loadExampleProgram(index);
             },
             itemBuilder: (index) => List.generate(
