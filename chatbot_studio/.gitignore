@@ -1,5 +1,7 @@
 ### Flutter Generated
 
+.gitignore
+
 # Miscellaneous
 *.class
 *.lock
