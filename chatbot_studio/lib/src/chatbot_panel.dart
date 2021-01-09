@@ -172,41 +172,63 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
 
   @override
   Widget build(BuildContext context) {
-    Widget chat = Scrollbar(
-      child: ListView.builder(
-        controller: _scrollController,
-        itemCount: _messages.length,
-        itemBuilder: (context, index) {
-          var message = _messages[index];
+    Widget chat;
+    if (_messages.isNotEmpty) {
+      chat = Scrollbar(
+        child: ListView.builder(
+          controller: _scrollController,
+          itemCount: _messages.length,
+          itemBuilder: (context, index) {
+            var message = _messages[index];
 
-          // special case: input message
-          if (message is _UserInputMessage) {
-            return _UserInputItem(message);
-          }
-
-          // its a normal chat message
-          if (message is Message) {
-            var item = _MessageItem(
-              message: message,
-              prevMessage: index > 0
-                  ? ((_messages[index - 1] is Message)
-                      ? _messages[index - 1]
-                      : null)
-                  : null,
-            );
-            if (index == _messages.length - 1) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                child: item,
-              );
+            // special case: input message
+            if (message is _UserInputMessage) {
+              return _UserInputItem(message);
             }
-            return item;
-          }
 
-          throw StateError('Unknown chat message!');
-        },
-      ),
-    );
+            // its a normal chat message
+            if (message is Message) {
+              var item = _MessageItem(
+                message: message,
+                prevMessage: index > 0
+                    ? ((_messages[index - 1] is Message)
+                        ? _messages[index - 1]
+                        : null)
+                    : null,
+              );
+              if (index == _messages.length - 1) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 24.0),
+                  child: item,
+                );
+              }
+              return item;
+            }
+
+            throw StateError('Unknown chat message!');
+          },
+        ),
+      );
+    } else {
+      chat = Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(width: 48.0),
+          Text(
+            'Hello! I am Miarz.',
+            style: TextStyle(fontSize: 18.0),
+          ),
+          Text(
+            'If you want to see me in action start writing your first '
+            'script and press play :)',
+            style: TextStyle(
+              fontSize: 14.0,
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      );
+    }
 
     // Wrap the chat with a gesture detector if the chatbot is waiting for
     // the user to click x times on the chat (to trigger the conversation).
@@ -220,29 +242,40 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
       );
     }
 
+    Widget chatbotAppBar = Container(
+      height: 56.0,
+      color: Colors.grey[100],
+      child: Row(
+        children: [
+          SizedBox(width: 12.0),
+          Image.asset(
+            'assets/chatbot.png',
+            height: 42.0,
+          ),
+          SizedBox(width: 16.0),
+          Text('Chatbot'),
+          Expanded(child: Container()),
+          if (_waitForEventCompleter != null &&
+              !_waitForEventCompleter.isCompleted)
+            IconButton(
+              tooltip: 'Debug: Trigger Event ($_waitForEventName)',
+              icon: Icon(Icons.edit, color: Colors.black),
+              onPressed: () {
+                handleTriggerEvent(_waitForEventName);
+              },
+            ),
+          SizedBox(width: 24.0),
+        ],
+      ),
+    );
+
     return Container(
       width: 350,
       height: double.infinity,
       color: Colors.white,
       child: Column(
         children: [
-          Container(
-              height: 42.0,
-              color: Colors.grey[100],
-              child: Row(
-                children: [
-                  SizedBox(width: 24.0),
-                  if (_waitForEventCompleter != null &&
-                      !_waitForEventCompleter.isCompleted)
-                    IconButton(
-                      tooltip: 'Debug: Trigger Event ($_waitForEventName)',
-                      icon: Icon(Icons.edit, color: Colors.black),
-                      onPressed: () {
-                        handleTriggerEvent(_waitForEventName);
-                      },
-                    ),
-                ],
-              )),
+          chatbotAppBar,
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),

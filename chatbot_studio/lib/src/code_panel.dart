@@ -181,6 +181,7 @@ class CodePanelState extends State<CodePanel> {
     // wrap the editor with this panel´s container
     return Container(
       constraints: BoxConstraints.expand(),
+      padding: const EdgeInsets.only(left: 24.0, top: 12.0),
       color: Colors.white,
       child: editor,
     );
