@@ -184,6 +184,16 @@ class MainScaffoldState extends State<MainScaffold> {
   Interpretation _runningInterpretation;
 
   @override
+  void initState() {
+    super.initState();
+    // Instead of showing an empty editor we show a `Hello World` program
+    // when the user first opens this app.
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      loadSampleProgram(0);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
