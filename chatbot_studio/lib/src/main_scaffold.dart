@@ -10,7 +10,7 @@ import 'package:interpreter/interpreter.dart';
 import 'chatbot_panel.dart';
 import 'code_panel.dart';
 import 'console_panel.dart';
-import 'example_programs.dart';
+import 'sample_programs.dart';
 
 // used for state management
 final mainScaffoldKey = GlobalKey<MainScaffoldState>();
@@ -62,6 +62,7 @@ class MainScaffoldState extends State<MainScaffold> {
     }
   }
 
+  /// Loads the given [sourceCode] into the editor.
   void loadProgram(String sourceCode) {
     // stop the currently running program (if any)
     stopProgram();
@@ -75,13 +76,16 @@ class MainScaffoldState extends State<MainScaffold> {
     codePanelKey.currentState.setSourceCode(sourceCode);
   }
 
-  /// Loads a program from the [EXAMPLE_PROGRAMS] array.
-  void loadExampleProgram(int index) {
+  /// Loads a sample program from the [SAMPLE_PROGRAMS] array.
+  void loadSampleProgram(int index) {
     // load the source code of the selected sample program
-    var sampleProgram = EXAMPLE_PROGRAMS[index];
+    var sampleProgram = SAMPLE_PROGRAMS[index];
     loadProgram(sampleProgram['src']);
   }
 
+  /// Enables or disables logging. If enabled, all info and error
+  /// messages from the lexer, parser or interpreter will be printed
+  /// on the console panel.
   void enableLogs(bool enable) {
     setState(() {
       _enabledLogs = enable;
@@ -89,8 +93,6 @@ class MainScaffoldState extends State<MainScaffold> {
   }
 
   /// Runs the current program.
-  ///
-  /// Outputs all status or error messages on the console.
   void runProgram() async {
     if (_isRunningProgram) return;
 
@@ -217,6 +219,8 @@ class MainScaffoldState extends State<MainScaffold> {
   }
 }
 
+/// Contains buttons and actions such as importing/exporting files,
+/// selecting a sample program, starting the program, etc.
 class ToolBar extends StatelessWidget {
   ToolBar({
     @required this.isRunningProgram,
@@ -250,13 +254,13 @@ class ToolBar extends StatelessWidget {
           PopupMenuButton(
             tooltip: 'Example Programs',
             onSelected: (int index) {
-              mainScaffoldKey.currentState.loadExampleProgram(index);
+              mainScaffoldKey.currentState.loadSampleProgram(index);
             },
             itemBuilder: (index) => List.generate(
-              EXAMPLE_PROGRAMS.length,
+              SAMPLE_PROGRAMS.length,
               (index) => PopupMenuItem(
                 value: index,
-                child: Text(EXAMPLE_PROGRAMS[index]['name']),
+                child: Text(SAMPLE_PROGRAMS[index]['name']),
               ),
             ),
           ),

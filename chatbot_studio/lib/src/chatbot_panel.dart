@@ -1,14 +1,17 @@
 import 'dart:async';
 
-import 'package:bubble/bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:interpreter/interpreter.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:bubble/bubble.dart';
+
+import 'package:interpreter/interpreter.dart';
 
 // used for state management
 final chatbotPanelKey = GlobalKey<ChatbotPanelState>();
 
+/// Visualizes a conversation with a chatbot. It does so similar to
+/// messaging apps like WhatsApp.
 class ChatbotPanel extends StatefulWidget {
   ChatbotPanel({
     @required this.isRunningProgram,
@@ -16,6 +19,9 @@ class ChatbotPanel extends StatefulWidget {
   }) : super(key: chatbotPanelKey);
 
   final bool isRunningProgram;
+
+  /// Whether the chat list should scroll automatically to the bottom
+  /// whenever new messages are appened.
   final bool scrollAutomatically;
 
   @override
@@ -23,16 +29,18 @@ class ChatbotPanel extends StatefulWidget {
 }
 
 class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
-  // list of chat messages
-  // chat may also contain input items therefore I use dynamic type here
-  // instead of Message type
+  // Contains the list of all appended chat messages.
   List<Message> _messages = [];
   var _scrollController = ScrollController();
 
+  // These completers are used for the `wait` statement.
+  // For example, one completer waits until the user has clicked the
+  // screen x-many times (i.e. `wait click x` statement).
   Completer<bool> _waitForClickCompleter;
   Completer<String> _waitForEventCompleter;
   String _waitForEventName;
 
+  /// Clears all appended chat messages.
   @override
   void clear() {
     if (_messages.isEmpty) return;
@@ -40,59 +48,82 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
     _scrollController.jumpTo(0.0);
   }
 
+  /// Appends the new [message] at the end of the chatbot´s chat.
   @override
   void sendMessage(Message message) {
-    // add the message to the chat
+    // append the message to the chat
     setState(() => _messages.add(message));
 
     // scroll to the bottom message if automatic scrolling is enabled
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      var offset = _scrollController.position.maxScrollExtent;
-      _scrollController.animateTo(
-        offset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.linear,
-      );
-    });
+    if (widget.scrollAutomatically) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        var offset = _scrollController.position.maxScrollExtent;
+        _scrollController.animateTo(
+          offset,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.linear,
+        );
+      });
+    }
   }
 
+  /// Removes the last message from the chatbot´s chat.
   @override
   void removeLastMessage() {
     if (_messages.isEmpty) return;
     setState(() => _messages.removeLast());
   }
 
+  /// Prompts the user to interact with the chatbot which then responds
+  /// with an appropriate response to the requested [input].
+  ///
+  /// For example, the chatbot may wait until the user has selected an
+  /// item from a list of single-choice options.
   @override
   Future<UserInputResponse> waitForInput(UserInput input) {
+    // Used to immediately return a future as return value which, however,
+    // will only be completed when we receive the appropriate response.
     var completer = Completer<UserInputResponse>();
+
     switch (input.type) {
       case UserInputType.singleChoice:
-        // add the input request to the bottom of the chat
-        // e.g. for single choice this is a list of buttons
-        sendMessage(UserInputMessage(
+        // The chatbot is asked to show a list of single-choice options.
+        // It should wait until the user has selected one and then respond
+        // with the selected option.
+
+        // Called when the user has selected a single-choice option.
+        final handleChoiceSelected = (index) {
+          // Build the response from the option the user has selected.
+          final response =
+              UserInputResponse.singleChoice(selectedChoice: index);
+
+          // Update the single-choice chat message to reflect
+          // the selected option.
+          setState(() {
+            assert(_messages.last is _UserInputMessage);
+            _messages.removeLast();
+            _messages.add(_UserInputMessage(input: input, response: response));
+          });
+
+          // Finally, complete the returned future with this response.
+          completer.complete(response);
+        };
+
+        // Append the single-choice message to the chat to allow the
+        // user to select an option.
+        sendMessage(_UserInputMessage(
           input: input,
-          onSingleChoiceSelected: (index) {
-            var response = UserInputResponse.singleChoice(
-              selectedChoice: index,
-            );
-
-            // update chat
-            setState(() {
-              assert(_messages.last is UserInputMessage);
-              _messages.removeLast();
-              _messages.add(UserInputMessage(input: input, response: response));
-            });
-
-            // notify the interpreter about the response
-            completer.complete(response);
-          },
+          onSingleChoiceSelected: handleChoiceSelected,
         ));
         break;
     }
-    // completes when the user responds with some input
+
+    // As stated further above, this future will complete when the chatbot
+    // has received an appropriate response from the user.
     return completer.future;
   }
 
+  /// Waits until the chatbot has clicked once by the user.
   @override
   Future<void> waitForClick() {
     setState(() {
@@ -101,6 +132,7 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
     return _waitForClickCompleter.future;
   }
 
+  /// Waits until the chatbot receives an event with the given [eventName].
   @override
   Future<void> waitForEvent(String eventName) {
     setState(() {
@@ -110,6 +142,8 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
     return _waitForEventCompleter.future;
   }
 
+  // Called internally be the chatbot whenever it receives a touch
+  // input from the user.
   void handleClick() {
     setState(() {
       _waitForClickCompleter?.complete(true);
@@ -117,6 +151,8 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
     });
   }
 
+  // Called internally by the chatbot whenever a `Trigger Event Button`
+  // has been clicked.
   void handleTriggerEvent(String eventName) {
     if (eventName == _waitForEventName) {
       // chatbot is currently waiting for this event to happen
@@ -143,8 +179,8 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
         itemBuilder: (context, index) {
           var message = _messages[index];
 
-          // check if it is an input message
-          if (message is UserInputMessage) {
+          // special case: input message
+          if (message is _UserInputMessage) {
             return _UserInputItem(message);
           }
 
@@ -172,8 +208,8 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
       ),
     );
 
-    // wrap the chat with a gesture detector if the chatbot is waiting for
-    // the user to click x times on the chat (to trigger the conversation)
+    // Wrap the chat with a gesture detector if the chatbot is waiting for
+    // the user to click x times on the chat (to trigger the conversation).
     bool isWaitingForUserClick =
         _waitForClickCompleter != null && !_waitForClickCompleter.isCompleted;
     if (isWaitingForUserClick) {
@@ -219,6 +255,7 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
   }
 }
 
+// Renders a single chat message.
 class _MessageItem extends StatelessWidget {
   _MessageItem({
     @required this.message,
@@ -357,8 +394,13 @@ class _MessageItem extends StatelessWidget {
   }
 }
 
-class UserInputMessage extends Message {
-  UserInputMessage({
+// A special type of chat message that is used by the chatbot to
+// provide input controls to the user.
+// For example, the chatbot may render a list of single-choice options
+// as a dedicated chat message.
+// For the actual graphical representation see [_UserInputItem] below.
+class _UserInputMessage extends Message {
+  _UserInputMessage({
     @required this.input,
     this.response,
     this.onSingleChoiceSelected,
@@ -372,7 +414,7 @@ class UserInputMessage extends Message {
 class _UserInputItem extends StatelessWidget {
   _UserInputItem(this.message);
 
-  final UserInputMessage message;
+  final _UserInputMessage message;
 
   @override
   Widget build(BuildContext context) {

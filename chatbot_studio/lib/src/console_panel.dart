@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
-enum LogLevel {
-  info,
-  error,
-}
+enum LogLevel { info, error }
 
 // used for state management
 final consolePanelKey = GlobalKey<ConsolePanelState>();
 
-/// Represents a console that can display messages.
+/// Represents a console that can print messages.
 class ConsolePanel extends StatefulWidget {
   ConsolePanel({
     @required this.isRunningProgram,

@@ -1,5 +1,5 @@
 /// Source codes of multiple sample programs.
-const List<Map<String, dynamic>> EXAMPLE_PROGRAMS = [
+const List<Map<String, dynamic>> SAMPLE_PROGRAMS = [
   {
     'name': 'Hello World',
     'src': '''
