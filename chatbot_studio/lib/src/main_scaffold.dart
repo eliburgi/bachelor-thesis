@@ -34,24 +34,14 @@ class MainScaffoldState extends State<MainScaffold> {
 
   /// Import the source code from a file.
   Future importFromFile() async {
-    // _file = await FilePicker.getFile(
-    //   allowedExtensions: ['ccml', 'txt'],
-    //   type: FileType.custom,
-    // );
-
-    // final reader = html.FileReader();
-    // reader.readAsText(_file);
-    // await reader.onLoad.first;
-
-    // String content = reader.result as String;
-    // loadProgram(content);
-
     FilePickerCross file = await FilePickerCross.importFromStorage(
       type: FileTypeCross.custom,
       fileExtension: '.ccml, .txt',
     );
-    String content = file.toBase64();
-    loadProgram(content);
+    String contentInBase64 = file.toBase64();
+    var decoded = base64.decode(contentInBase64);
+    var utf8SourceCode = utf8.decode(decoded);
+    loadProgram(utf8SourceCode);
   }
 
   /// Exports the current source code to a file.
