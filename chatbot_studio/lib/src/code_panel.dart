@@ -50,6 +50,12 @@ class CodePanelState extends State<CodePanel> {
     _textEditingController.text = value;
   }
 
+  /// Clears the source-code editor.
+  void clear() {
+    FocusScope.of(context).unfocus();
+    _textEditingController.clear();
+  }
+
   // Used for entering source code text.
   final _textEditingController = TextEditingController(text: '');
   var _textFieldFocusNode = FocusNode();

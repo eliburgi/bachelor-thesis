@@ -2,13 +2,11 @@ import 'dart:convert';
 import 'dart:js' as js;
 import 'dart:html' as html;
 
-import 'package:file_picker_cross/file_picker_cross.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// import 'package:file_picker_web/file_picker_web.dart' as webPicker;
-
 import 'package:flutter/material.dart';
-import 'package:interpreter/interpreter.dart';
+import 'package:file_picker_cross/file_picker_cross.dart';
 
+import 'package:interpreter/interpreter.dart';
 import 'chatbot_panel.dart';
 import 'code_panel.dart';
 import 'console_panel.dart';
@@ -26,34 +24,41 @@ class MainScaffold extends StatefulWidget {
 }
 
 class MainScaffoldState extends State<MainScaffold> {
-  html.File _file;
-
-  /// Whether the current source code has been imported from
-  /// a file.
-  bool get isImportedFromFile => _file != null;
+  // The file from which the current source code has originally
+  // been imported (may be null).
+  // When the user exports his source code, the exported file
+  // will have the same name as the originally imported file.
+  FilePickerCross _file;
 
   /// Import the source code from a file.
   Future importFromFile() async {
-    FilePickerCross file = await FilePickerCross.importFromStorage(
+    _file = await FilePickerCross.importFromStorage(
       type: FileTypeCross.custom,
       fileExtension: '.ccml, .txt',
     );
-    String contentInBase64 = file.toBase64();
-    var decoded = base64.decode(contentInBase64);
-    var utf8SourceCode = utf8.decode(decoded);
-    loadProgram(utf8SourceCode);
+    String contentInBase64 = _file.toBase64();
+    var decodedSourceCode = base64.decode(contentInBase64);
+    var sourceCodeStr = String.fromCharCodes(decodedSourceCode);
+    showAboutDialog(
+      context: context,
+      applicationName: sourceCodeStr,
+    );
+    loadProgram(sourceCodeStr);
   }
 
   /// Exports the current source code to a file.
   Future exportToFile() async {
     if (kIsWeb) {
       // download the file to the user´s 'Downloads' folder (by default)
-      final sourceCode = codePanelKey.currentState.sourceCode;
+      String filename = _file != null ? _file.fileName : 'chatbot.ccml';
+      String sourceCode = codePanelKey.currentState.sourceCode;
       final bytes = utf8.encode(sourceCode);
       js.context.callMethod("webSaveAs", [
         html.Blob([bytes]),
-        "test.ccml"
+        filename,
       ]);
+    } else {
+      print('Exporting to a file is not supported on this platform!');
     }
   }
 
@@ -61,9 +66,10 @@ class MainScaffoldState extends State<MainScaffold> {
     // stop the currently running program (if any)
     stopProgram();
 
-    // clear the console and chat history
+    // clear the console, chatbot and code editor
     consolePanelKey.currentState.clear();
     chatbotPanelKey.currentState.clear();
+    codePanelKey.currentState.clear();
 
     // set the editor´s source code
     codePanelKey.currentState.setSourceCode(sourceCode);
