@@ -9,7 +9,7 @@ class ChatbotStudioApplication extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Chatbot-Studio',
+      title: 'Chatbot-Creator',
       home: MainScaffold(),
     );
   }

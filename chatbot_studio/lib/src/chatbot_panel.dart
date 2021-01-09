@@ -213,11 +213,13 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
       chat = Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(width: 48.0),
+          SizedBox(height: 48.0),
           Text(
-            'Hello! I am Miarz.',
+            'Hello, I am BeepBot 👋',
             style: TextStyle(fontSize: 18.0),
+            textAlign: TextAlign.center,
           ),
+          SizedBox(height: 8.0),
           Text(
             'If you want to see me in action start writing your first '
             'script and press play :)',
@@ -225,6 +227,7 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
               fontSize: 14.0,
               color: Colors.grey,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       );

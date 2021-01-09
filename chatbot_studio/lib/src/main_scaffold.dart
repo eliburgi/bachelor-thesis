@@ -39,10 +39,6 @@ class MainScaffoldState extends State<MainScaffold> {
     String contentInBase64 = _file.toBase64();
     var decodedSourceCode = base64.decode(contentInBase64);
     var sourceCodeStr = String.fromCharCodes(decodedSourceCode);
-    showAboutDialog(
-      context: context,
-      applicationName: sourceCodeStr,
-    );
     loadProgram(sourceCodeStr);
   }
 
@@ -237,6 +233,12 @@ class ToolBar extends StatelessWidget {
       color: Colors.grey[100],
       child: Row(
         children: [
+          SizedBox(width: 24.0),
+          Text(
+            'Chatbot-Creator',
+            style: TextStyle(fontSize: 20.0),
+          ),
+          SizedBox(width: 24.0),
           IconButton(
             tooltip: 'Import',
             icon: Icon(Icons.file_upload),
