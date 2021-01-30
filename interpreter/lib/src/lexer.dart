@@ -59,18 +59,20 @@ class Lexer {
 
   /// Gets the next token in the program code.
   Token next() {
-    Token t = Token(line: _line, col: _col);
-
     if (_indentQueue.isNotEmpty) {
       _indentQueue.removeLast();
+      Token t = Token(line: _line, col: _col);
       t.type = TokenType.indent;
+      t.rawValue = '  ';
       _log('next - detected token: $t');
       return t;
     }
 
     if (_dedentQueue.isNotEmpty) {
       _dedentQueue.removeLast();
+      Token t = Token(line: _line, col: _col);
       t.type = TokenType.dedent;
+      t.rawValue = '';
       _log('next - detected token: $t');
       return t;
     }
@@ -93,7 +95,9 @@ class Lexer {
         _readNextCharacter();
       }
 
+      Token t = Token(line: _line, col: _col);
       t.type = TokenType.newLine;
+      t.rawValue = '\n';
       _log('next - detected token: $t');
       return t;
     }
@@ -111,6 +115,8 @@ class Lexer {
       _log('next - skipping whitespace');
       _readNextCharacter();
     }
+
+    Token t = Token(line: _line, col: _col);
 
     // a token that starts with a digit must be an INTEGER
     if (Util.isDigit(_currentChar)) {
@@ -138,8 +144,10 @@ class Lexer {
       _readNextCharacter();
       if (_currentChar == '=') {
         t.type = TokenType.lessThanEqual;
+        t.rawValue = '<=';
       } else {
         t.type = TokenType.lessThan;
+        t.rawValue = '<';
       }
       _readNextCharacter();
       _log('next - detected token: $t');
@@ -149,8 +157,10 @@ class Lexer {
       _readNextCharacter();
       if (_currentChar == '=') {
         t.type = TokenType.greaterThanEqual;
+        t.rawValue = '>=';
       } else {
         t.type = TokenType.greaterThan;
+        t.rawValue = '>';
       }
       _readNextCharacter();
       _log('next - detected token: $t');
@@ -160,8 +170,10 @@ class Lexer {
       _readNextCharacter();
       if (_currentChar == '=') {
         t.type = TokenType.equals;
+        t.rawValue = '==';
       } else {
         t.type = TokenType.assign;
+        t.rawValue = '=';
       }
       _readNextCharacter();
       _log('next - detected token: $t');
@@ -171,6 +183,7 @@ class Lexer {
     // END OF FILE: the Lexer has now parsed the whole program
     if (_currentChar == EOF) {
       t.type = TokenType.eof;
+      t.rawValue = '';
       _log('next - detected token: $t');
       return t;
     }
@@ -194,6 +207,7 @@ class Lexer {
 
     t.type = TokenType.integer;
     t.value = int.parse(valueStr);
+    t.rawValue = valueStr;
   }
 
   /// Reads a string literal, starting at the current character
@@ -211,6 +225,7 @@ class Lexer {
 
     t.type = TokenType.string;
     t.value = value;
+    t.rawValue = '\'$value\'';
   }
 
   /// Reads a name, starting at the current character
@@ -226,10 +241,12 @@ class Lexer {
 
     if (KEYWORDS.containsKey(name)) {
       t.type = KEYWORDS[name];
+      t.rawValue = name;
     } else {
       // parameter name
       t.type = TokenType.name;
       t.value = name;
+      t.rawValue = name;
     }
   }
 
@@ -310,9 +327,13 @@ class Lexer {
   int _line = 1;
 
   /// The current column the lexer is at.
-  int _col = 0;
+  ///
+  /// We are starting at -1 because of the initial call
+  /// in the constructor (see constructor) increments it
+  /// to its actual starting value which is 0.
+  int _col = -1;
 
-  //! TODO
+  //! TODO: remove
   String _lineStr;
 
   /// Keeps track of how often a tabulator has been used
@@ -340,9 +361,17 @@ class Lexer {
       return;
     }
 
+    // This fixes a bug where the actual line and column number
+    // would be incorrect for tokens at the start of a new line.
+    // This has to do with the indent/dedent detection and the
+    // _checkForIndentsOrDedents() function.
+    if (_currentChar != NEWLINE) {
+      _col++;
+    }
+
     _currentChar = program[_characterIndex];
     _characterIndex++;
-    _col++;
+
     _lineStr = '$_lineStr$_currentChar';
 
     if (_currentChar == NEWLINE) {

@@ -81,6 +81,10 @@ class Token {
   /// The first column starts at the index 0.
   int col;
 
+  /// The raw string value that represents this token in the
+  /// original string that the lexer has detected this token.
+  String rawValue;
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) {
