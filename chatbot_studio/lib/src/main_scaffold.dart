@@ -126,22 +126,21 @@ class MainScaffoldState extends State<MainScaffold> {
     // highlight the code lines that are currently executed by the interpreter
     NodeVisitedCallback highlightCodeVisitor = (node) {
       if (node.lineStart == null || node.lineEnd == null) return;
-      codePanelKey.currentState.highlightLines(
-        from: node.lineStart,
-        to: node.lineEnd,
-      );
+      codePanelKey.currentState
+          .highlightLines(from: node.lineStart, to: node.lineEnd);
     };
     interpreter.onNodeVisited = highlightCodeVisitor;
 
-    // now actually interpret the program
+    //* Now actually interpret the program.
     setState(() {
       _runningInterpretation = interpreter.interpret();
     });
     await _runningInterpretation.future.then((_) {
       consolePanelKey.currentState
           .print('Interpretation completed successfully');
+      codePanelKey.currentState.highlightLines(from: null, to: null);
     }).catchError((error) {
-      // highlight the line that caused the error in the program
+      //* Highlight the line that caused the error in the program.
       int programLineThatCausedError;
       if (error is LexerError) {
         programLineThatCausedError = error.line;
@@ -153,8 +152,7 @@ class MainScaffoldState extends State<MainScaffold> {
       if (programLineThatCausedError != null) {
         codePanelKey.currentState.highlightError(programLineThatCausedError);
       }
-
-      // additionally print the error message on the console
+      //* Additionally print the error message on the console.
       consolePanelKey.currentState.print(error.toString(), LogLevel.error);
     }).whenComplete(() {
       setState(() {

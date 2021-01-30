@@ -1,3 +1,4 @@
+import 'package:chatbot_studio/src/syntax_highlighter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -54,10 +55,11 @@ class CodePanelState extends State<CodePanel> {
   void clear() {
     FocusScope.of(context).unfocus();
     _textEditingController.clear();
+    highlightLines(from: null, to: null);
   }
 
   // Used for entering source code text.
-  final _textEditingController = TextEditingController(text: '');
+  final _textEditingController = TextEditingController();
   var _textFieldFocusNode = FocusNode();
 
   // Used to highlight the currently executed statement (if any).
@@ -78,9 +80,10 @@ class CodePanelState extends State<CodePanel> {
     // The user can no directly edit the source code when either the
     // program is currently running or an error is highlighted.
     bool allowEditing = !widget.isRunningProgram && _highlightedErrorLine < 1;
+    bool isEditing = _textFieldFocusNode.hasFocus;
 
     Widget editor;
-    if (allowEditing) {
+    if (allowEditing && isEditing) {
       // Build an editor that allows the user to freely edit the
       // source code.
       editor = RawKeyboardListener(
@@ -108,6 +111,10 @@ class CodePanelState extends State<CodePanel> {
         },
         child: TextField(
           controller: _textEditingController,
+          style: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 16.0,
+          ),
           decoration: InputDecoration(
             border: InputBorder.none,
           ),
@@ -121,44 +128,12 @@ class CodePanelState extends State<CodePanel> {
       // as well as any errors that occured. This kind of editor is used
       // to highlight running programs but NOT to actually allow the user
       // to edit the source code.
-      var codeLines = sourceCode.split('\n');
       editor = RichText(
-        text: TextSpan(
-          style: Theme.of(context).textTheme.subtitle1,
-          children: List.generate(
-            codeLines.length,
-            (lineIndex) {
-              int lineNr = lineIndex + 1;
-              bool highlightLine = _highlightedLineStart <= lineNr &&
-                  lineNr <= _highlightedLineEnd;
-
-              if (highlightLine) {
-                var color = _highlightedLineStart != _highlightedLineEnd
-                    ? Colors.yellowAccent
-                    : Colors.greenAccent;
-                return TextSpan(
-                  text: '${codeLines[lineIndex]}\n',
-                  style: Theme.of(context).textTheme.subtitle1.copyWith(
-                        backgroundColor: color,
-                      ),
-                );
-              }
-
-              bool highlightError = _highlightedErrorLine == lineNr;
-              if (highlightError) {
-                return TextSpan(
-                  text: '${codeLines[lineIndex]}\n',
-                  style: Theme.of(context).textTheme.subtitle1.copyWith(
-                        backgroundColor: Colors.redAccent,
-                      ),
-                );
-              }
-
-              return TextSpan(
-                text: '${codeLines[lineIndex]}\n',
-              );
-            },
-          ),
+        text: SyntaxHighlighter.highlight(
+          sourceCode,
+          beginStmtLine: _highlightedLineStart,
+          endStmtLine: _highlightedLineEnd,
+          errorLine: _highlightedErrorLine,
         ),
       );
 
@@ -167,15 +142,16 @@ class CodePanelState extends State<CodePanel> {
       // code. However, if the user clicks on the editor we interpret this
       // as "I want to edit the code again". Thus we de-highlight the
       // errornous line which in turn enables the editable text editor again.
-      if (_highlightedErrorLine > 0) {
-        editor = GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            setState(() => _highlightedErrorLine = -1);
-          },
-          child: editor,
-        );
-      }
+      // if (_highlightedErrorLine > 0) {
+      editor = GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          FocusScope.of(context).requestFocus(_textFieldFocusNode);
+          setState(() => _highlightedErrorLine = -1);
+        },
+        child: editor,
+      );
+      // }
     }
 
     // wrap the editor with this panel´s container
