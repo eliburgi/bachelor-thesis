@@ -92,29 +92,27 @@ class MainScaffoldState extends State<MainScaffold> {
   void runProgram() async {
     if (_isRunningProgram) return;
 
-    // clear the console
+    //* Clear the console and un-focus the code editor.
     consolePanelKey.currentState.clear();
+    codePanelKey.currentState.unfocus();
 
-    var programCode = codePanelKey.currentState.sourceCode;
+    String sourceCode = codePanelKey.currentState.sourceCode;
 
-    // print an error on the console if the program code is empty
-    if (programCode.trim().isEmpty) {
+    //* Print an error on the console if the program code is empty.
+    if (sourceCode.trim().isEmpty) {
       consolePanelKey.currentState
           .print('ERROR: Program is empty!', LogLevel.error);
       return;
     }
 
-    setState(() {
-      _isRunningProgram = true;
-    });
-
+    //* Create & setup interpreter.
     var chatbot = chatbotPanelKey.currentState;
-    var lexer = Lexer(programCode);
+    var lexer = Lexer(sourceCode);
     var parser = Parser(lexer);
     var interpreter = Interpreter(parser, chatbot);
 
-    // print Interpreter log messages to the console panel
-    // this also includes log messages from the Lexer and Parser
+    //* Print Interpreter log messages to the console panel.
+    //* This also includes log messages from the Lexer and Parser.
     var printToConsole = (msg) {
       if (!_enabledLogs) return;
       consolePanelKey.currentState.print(msg);
@@ -123,7 +121,8 @@ class MainScaffoldState extends State<MainScaffold> {
     parser.logPrinter = printToConsole;
     interpreter.logPrinter = printToConsole;
 
-    // highlight the code lines that are currently executed by the interpreter
+    //* Highlight the code lines that are currently executed by
+    //* the interpreter.
     NodeVisitedCallback highlightCodeVisitor = (node) {
       if (node.lineStart == null || node.lineEnd == null) return;
       codePanelKey.currentState
@@ -132,6 +131,7 @@ class MainScaffoldState extends State<MainScaffold> {
     interpreter.onNodeVisited = highlightCodeVisitor;
 
     //* Now actually interpret the program.
+    setState(() => _isRunningProgram = true);
     setState(() {
       _runningInterpretation = interpreter.interpret();
     });

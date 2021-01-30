@@ -51,6 +51,20 @@ class CodePanelState extends State<CodePanel> {
     _textEditingController.text = value;
   }
 
+  /// Un-focuses the code editor.
+  void unfocus() {
+    FocusScope.of(context).unfocus();
+
+    //* CCML syntax requires a NEWLINE at the end of the program.
+    //* If the user forgets to add that NEWLINE it is annoying for him/her.
+    //* Thus we simply automatically check whenever the user is done typing
+    //* if there is a NEWLINE at the end of the source code.
+    //* If not, we simply add one.
+    if (!sourceCode.endsWith('\n')) {
+      setSourceCode('$sourceCode\n');
+    }
+  }
+
   /// Clears the source-code editor.
   void clear() {
     FocusScope.of(context).unfocus();
@@ -72,6 +86,7 @@ class CodePanelState extends State<CodePanel> {
   @override
   void dispose() {
     _textEditingController.dispose();
+    _textFieldFocusNode.dispose();
     super.dispose();
   }
 
