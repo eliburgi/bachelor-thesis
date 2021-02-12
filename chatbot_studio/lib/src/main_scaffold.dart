@@ -10,6 +10,7 @@ import 'package:interpreter/interpreter.dart';
 import 'chatbot_panel.dart';
 import 'code_panel.dart';
 import 'console_panel.dart';
+import 'help_dialog.dart';
 import 'sample_programs.dart';
 
 // used for state management
@@ -280,6 +281,13 @@ class ToolBar extends StatelessWidget {
             value: enableLogs,
             onChanged: (value) {
               mainScaffoldKey.currentState.enableLogs(value);
+            },
+          ),
+          IconButton(
+            tooltip: 'Help',
+            icon: Icon(Icons.help_outline_rounded),
+            onPressed: () {
+              HelpDialog.show(context);
             },
           ),
           isRunningProgram
