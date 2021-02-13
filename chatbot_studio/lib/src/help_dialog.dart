@@ -43,6 +43,84 @@ class HelpDialog extends StatelessWidget {
                       ),
                       SizedBox(height: 24.0),
                       StatementInfo(
+                        title: 'FLOW',
+                        description:
+                            'The `flow` command lets you split the conversation '
+                            'into smaller (reusable) parts. Every conversation '
+                            'must include one \'main\' flow',
+                        grammarRules: StatementGrammarRules(
+                          rules: [
+                            '`flow` <string> <block>',
+                          ],
+                        ),
+                        examples: StatementExamples(
+                          examples: [
+                            Example(
+                              '`flow` \'main\'\n  <block>',
+                              'This is the entry point for every conversation!',
+                            ),
+                            Example(
+                              '`flow` \'welcome\'\n  <block>',
+                              'Every conversation can include multiple other flows.',
+                            ),
+                            Example(
+                              '`startFlow` \'welcome\'',
+                              'Pauses the current flow, jumps to the given flow, executes it, and then resumes the current flow.',
+                            ),
+                            Example(
+                              '`endFlow`',
+                              'Forcefully exits the current flow.',
+                            ),
+                          ],
+                        ),
+                      ),
+                      StatementInfo(
+                        title: 'CREATE',
+                        description:
+                            'The `create` command lets the chatbot create '
+                            'entities that it can use throughout the conversation.',
+                        grammarRules: StatementGrammarRules(
+                          rules: [
+                            '`create` <entity> [<params>]',
+                          ],
+                        ),
+                        examples: StatementExamples(
+                          examples: [
+                            Example(
+                              '`create` counter \'my-counter\'\n',
+                              'A counter is a number that can be set, incremented, decremented.\nInitially 0.',
+                            ),
+                            Example(
+                              '`create` sender \'John Doe\'\n'
+                                  '  avatarUrl = \'https://url-to-img.png\'',
+                              'A sender can be attached to messages being sent.',
+                            ),
+                          ],
+                        ),
+                      ),
+                      StatementInfo(
+                        title: 'SET',
+                        description: 'The `set` command lets the chatbot set '
+                            'global configuration properties.',
+                        grammarRules: StatementGrammarRules(
+                          rules: [
+                            '`set` <config_property>',
+                          ],
+                        ),
+                        examples: StatementExamples(
+                          examples: [
+                            Example(
+                              '`set` delay 700',
+                              'All messages are now sent with a default delay of 700ms.',
+                            ),
+                            Example(
+                              '`set` sender \'John Doe\'\n',
+                              'All messages are now sent by John Doe. The sender must be CREATEed before.',
+                            ),
+                          ],
+                        ),
+                      ),
+                      StatementInfo(
                         title: 'SEND',
                         description:
                             'The `send` command tells the chatbot to send '
@@ -58,7 +136,7 @@ class HelpDialog extends StatelessWidget {
                             Example(
                                 '`send` image \'https://picsum.photos/200/300\''),
                             Example('`send` audio \'https://abc.myaudio.mp3\''),
-                            Example('`send` event my-event-name'),
+                            Example('`send` event \'my-event\''),
                           ],
                         ),
                       ),
@@ -77,8 +155,8 @@ class HelpDialog extends StatelessWidget {
                             Example('`wait` delay 1000', 'Waits for 1000ms.'),
                             Example('`wait` click 3',
                                 'Waits until chatbot is clicked 3 times.'),
-                            Example('`wait` event \'my-event-name\'',
-                                'Waits until event \'my-event-name\' is sent'),
+                            Example('`wait` event \'my-event\'',
+                                'Waits until event \'my-event\' is sent.'),
                           ],
                         ),
                       ),
@@ -121,10 +199,39 @@ class HelpDialog extends StatelessWidget {
                         ),
                         examples: StatementExamples(
                           examples: [
-                            Example('`if` counter \'my-counter\' <= 7'),
-                            Example('`if` hasTag \'my-new-tag\''),
+                            Example(
+                              '`if` counter \'my-counter\' == 7\n  `send` text \'It´s a prime number!\'\n  ...',
+                              'Operators: ==, <, <=, >, >=',
+                            ),
+                            Example(
+                                '`if` hasTag \'student\'\n  `send` text \'I grade you an A.\'\n  ...'),
                             Example(
                                 '`if` hasTag \'my-new-tag\'\n  <block>\n`else`\n  <block>'),
+                          ],
+                        ),
+                      ),
+                      StatementInfo(
+                        title: 'INPUT',
+                        description:
+                            'The `input` command lets the chatbot show different '
+                            'input forms to the user and wait for the user to '
+                            'submit something.',
+                        grammarRules: StatementGrammarRules(
+                          rules: [
+                            '`input` <input_type>',
+                          ],
+                        ),
+                        examples: StatementExamples(
+                          examples: [
+                            Example(
+                              '`send` text \'What is your favorite color?\'\n'
+                                  '`input` singleChoice\n'
+                                  '  `choice` \'Green\'\n'
+                                  '    <block>\n'
+                                  '  `choice` \'Yellow\'\n'
+                                  '    <block>\n',
+                              'Lets the user select from a list of choices.',
+                            ),
                           ],
                         ),
                       ),
@@ -304,11 +411,17 @@ class Markup extends StatefulWidget {
       fontFamily: 'monospace',
       fontSize: 16.0,
     ),
+    this.stringStyle = const TextStyle(
+      color: Colors.lightGreen,
+      fontFamily: 'monospace',
+      fontSize: 16.0,
+    ),
   });
 
   final String markup;
   final TextStyle style;
   final TextStyle keywordStyle;
+  final TextStyle stringStyle;
 
   @override
   _MarkupState createState() => _MarkupState();
@@ -323,6 +436,7 @@ class _MarkupState extends State<Markup> {
 
     final sb = StringBuffer();
     bool parsingKeyword = false;
+    bool parsingString = false;
     for (int i = 0; i < widget.markup.length; i++) {
       var c = widget.markup[i];
       if (c == '`') {
@@ -339,6 +453,23 @@ class _MarkupState extends State<Markup> {
             _spans.add(TextSpan(text: sb.toString()));
             sb.clear();
           }
+        }
+      } else if (c == '\'') {
+        if (parsingString) {
+          parsingString = false;
+          sb.write(c);
+          _spans.add(TextSpan(
+            text: sb.toString(),
+            style: widget.stringStyle,
+          ));
+          sb.clear();
+        } else {
+          parsingString = true;
+          if (sb.isNotEmpty) {
+            _spans.add(TextSpan(text: sb.toString()));
+            sb.clear();
+          }
+          sb.write(c);
         }
       } else {
         sb.write(c);

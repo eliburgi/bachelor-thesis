@@ -97,9 +97,9 @@ flow 'loop'
   {
     'name': 'Infinite Loop with Sender',
     'src': '''
-create sender 'Laura B.'
+create sender 'John Doe'
   avatarUrl = 'https://picsum.photos/id/1011/300/300'
-set sender 'Laura B.'
+set sender 'John Doe'
 set delay 700
 
 flow 'main'
@@ -184,10 +184,10 @@ flow 'main'
   {
     'name': 'Hello Conditions',
     'src': '''
-create sender 'Laura B.'
+create sender 'John Doe'
   avatarUrl = 'https://picsum.photos/id/1011/300/300'
 create counter 'myCounter'
-set sender 'Laura B.'
+set sender 'John Doe'
 set delay 700
 
 flow 'main'
