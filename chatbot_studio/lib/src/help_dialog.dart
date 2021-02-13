@@ -235,6 +235,14 @@ class HelpDialog extends StatelessWidget {
                           ],
                         ),
                       ),
+                      SizedBox(height: 24.0),
+                      Text(
+                        'Icons from: https://www.flaticon.com/free-icon/chatbot_3649460?term=chatbot&page=1&position=5&page=1&position=5&related_id=3649460&origin=search',
+                        style: const TextStyle(
+                          fontSize: 14.0,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
                     ],
                   ),
                 ),

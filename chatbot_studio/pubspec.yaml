@@ -1,5 +1,5 @@
 name: chatbot_studio
-description: A new Flutter project.
+description: A web-app that lets you build chatbots with a domain-specific language (DSL).
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
