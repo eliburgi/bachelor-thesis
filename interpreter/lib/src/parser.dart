@@ -598,6 +598,8 @@ class Parser {
 
         // A single pattern must end with a NEWLINE.
         _checkToken(TokenType.newLine);
+
+        patterns.add(pattern);
       } while (_currentToken.type == TokenType.when);
 
       // Parse responses.
@@ -623,6 +625,8 @@ class Parser {
         } else {
           _error('Response must not be empty (has no statements)!');
         }
+
+        responses.add(response);
       } while (_currentToken.type == TokenType.response);
 
       // Optionally, there can be a fallback response.
