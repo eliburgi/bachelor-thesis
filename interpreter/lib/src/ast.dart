@@ -504,44 +504,140 @@ class ActionStatementNode extends ASTNode {
   }
 }
 
-enum InputType { singleChoice }
+/// All possible types of input statements.
+enum InputType {
+  /// The user is presented a list of choices from which he
+  /// should select exactly one.
+  ///
+  /// For example, the chatbot could ask the user about his favorite color.
+  /// The choices then could e.g. be `blue` and `green`.
+  ///
+  /// The chatbot can then respond differently depending on the
+  /// selected choice.
+  singleChoice,
+
+  /// The user is presented a text field and should enter some text.
+  ///
+  /// For example, the chatbot could ask the user what his name is.
+  ///
+  /// The chatbot can then respond differently depending on the
+  /// text that was input.
+  freeText,
+}
 
 class InputStatementNode extends ASTNode {
+  /// What type of input this node represents.
   InputType type;
 
-  // for single choice
-  List<ChoiceNode> singleChoiceList;
+  /// Only for [InputType.singleChoice].
+  List<ChoiceNode> choices;
+
+  /// Only for [InputType.freeText].
+  ///
+  /// The text patterns the chatbot can respond to.
+  /// Each pattern matches to a response contained in [responses].
+  List<Pattern> patterns;
+
+  /// Only for [InputType.freeText].
+  ///
+  /// The actual responses.
+  List<ResponseNode> responses;
+
+  /// Only for [InputType.freeText]. Optional.
+  ///
+  /// If none of the [patterns] match this fallback response (if given)
+  /// will be executed by the chatbot.
+  ResponseNode fallback;
 
   @override
   Future<void> execute(RuntimeContext context) async {
     super.execute(context);
 
+    assert(type != null);
     switch (type) {
+      // Logic for single-choice input.
       case InputType.singleChoice:
-        var input = UserInput.singleChoice(
-          singleChoiceTitles: singleChoiceList
-              .map((choice) => choice.title)
-              .toList(growable: false),
+        assert(choices != null && choices.isNotEmpty);
+
+        // Create the input request for the chatbot.
+        final input = UserInputRequest.singleChoice(
+          singleChoiceTitles:
+              choices.map((choice) => choice.title).toList(growable: false),
         );
 
-        // wait for the user to select a single choice
+        // Wait for the user to select a single choice.
         log(context, 'execute - WAITING FOR INPUT $type');
         var response = await context.chatbot.waitForInput(input);
-
-        // user has selected a choice
         assert(response.type == UserInputType.singleChoice);
-        log(context, 'execute - USER DID INPUT $response');
-        var selectedChoice = singleChoiceList[response.selectedChoice];
 
-        // execute the selected choice statements
+        // User has selected a choice.
+        log(context, 'execute - USER DID INPUT $response');
+        var selectedChoice = choices[response.selectedChoiceIndex];
+
+        // Now execute the selected choice.
         await selectedChoice.execute(context);
+        break;
+      // Logic for free-text input.
+      case InputType.freeText:
+        assert(patterns != null && patterns.isNotEmpty);
+        assert(responses != null && responses.isNotEmpty);
+
+        // Create the input request for the chatbot.
+        final input = UserInputRequest.freeText();
+
+        // Wait for the user to enter some text.
+        log(context, 'execute - WAITING FOR INPUT $type');
+        var response = await context.chatbot.waitForInput(input);
+        assert(response.type == UserInputType.freeText);
+
+        // User has entered some text.
+        log(context, 'execute - USER DID INPUT $response');
+        final userInputText = response.userInputText;
+
+        // Try to match the entered text to a pattern.
+        Pattern matchingPattern;
+        for (var pattern in patterns) {
+          if (pattern.matches(userInputText)) {
+            matchingPattern = pattern;
+            break;
+          }
+        }
+
+        // A pattern matches the given text.
+        if (matchingPattern != null) {
+          // Execute the matching pattern´s response.
+          final responseName = matchingPattern.responseName;
+          final response = responses.firstWhere(
+            (response) => response.name == responseName,
+            orElse: () => null,
+          );
+          if (response == null) {
+            error('No response found with name: $responseName');
+          }
+          await response.execute(context);
+        } else {
+          // No matching pattern detected.
+          // Perform fallback if given. Otherwise do nothing.
+          if (fallback != null) {
+            await fallback.execute(context);
+          }
+        }
         break;
     }
   }
 }
 
+/// Used with a [InputType.singleChoice].
+///
+/// Represents a single choice that can be selected by the user.
 class ChoiceNode extends ASTNode {
+  /// The title of this choice.
+  ///
+  /// This title is visible to the user in the chatbot.
   String title;
+
+  /// The statements that are executed if this choice is selected
+  /// by the user.
   BlockNode block;
 
   @override
@@ -551,19 +647,94 @@ class ChoiceNode extends ASTNode {
   }
 }
 
-enum ConditionType { counter, hasTag }
+/// Used with a [InputType.freeText].
+///
+/// Represents a text pattern that the chatbot can respond to.
+class Pattern {
+  /// A non-empty list of strings that represent this pattern.
+  ///
+  /// These strings are typically regular expressions, but can
+  /// also just be simple strings.
+  List<String> strings;
 
+  /// The unique name of the response that should be executed by
+  /// the chatbot if any of the [strings] matches the user´s text input.
+  String responseName;
+
+  /// Whether this pattern matches the given [userInputText].
+  ///
+  /// This pattern matches a given text if any of its [strings]
+  /// matches the given [userInputText].
+  bool matches(String userInputText) {
+    for (var string in strings) {
+      final regex = RegExp(string);
+      if (regex.hasMatch(userInputText)) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+/// Used with a [InputType.freeText].
+///
+/// Represents a single response.
+class ResponseNode extends ASTNode {
+  /// The unique name of this response.
+  String name;
+
+  /// The statements that are executed if this response is determined.
+  BlockNode block;
+
+  @override
+  Future<void> execute(RuntimeContext context) async {
+    super.execute(context);
+    await block.execute(context);
+  }
+}
+
+/// All types of condition statements.
+enum ConditionType {
+  /// Used to compare the value of a counter against some integer value.
+  ///
+  /// For all comparison operations see [ConditionOp].
+  counter,
+
+  /// Used to check whether the chatbot has a certain tag stored.
+  hasTag,
+}
+
+/// For counter comparisons.
 enum ConditionOp { lt, lte, gt, gte, eq }
 
+/// Represents a condition that can either be `true` or `false`.
+///
+/// Depending on this condition, the chatbot can perform different actions.
 class ConditionNode extends ASTNode {
+  /// What type of condition it is.
+  ///
+  /// See: [ConditionType].
   ConditionType type;
 
+  /// Statements that are executed if this condition is `true`.
   BlockNode thenBlock;
-  BlockNode elseBlock; // optional
 
+  /// Optional. Statements that are executed if this condition is `false`.
+  BlockNode elseBlock;
+
+  /// The name of the counter or tag that is subject of this condition.
   String name; // of counter or tag
-  ConditionOp op; // for comparing a counter
-  int value; // the value that a counter is compared against
+
+  /// Only if [type] is [ConditionType.counter].
+  ///
+  /// What comparison operator (<, >, ...) is used to compare
+  /// the counter to an integer value.
+  ConditionOp op;
+
+  /// Only if [type] is [ConditionType.counter].
+  ///
+  /// The integer value that the counter is compared against.
+  int value;
 
   @override
   Future<void> execute(RuntimeContext context) async {

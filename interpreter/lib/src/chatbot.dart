@@ -11,7 +11,7 @@ abstract class Chatbot {
   void removeLastMessage();
 
   /// Prompts the user to input something and waits for a response.
-  Future<UserInputResponse> waitForInput(UserInput input);
+  Future<UserInputResponse> waitForInput(UserInputRequest input);
 
   /// Waits for the user to click on the chatbot.
   Future<void> waitForClick();
@@ -97,25 +97,47 @@ class Message {
   final Trigger trigger;
 }
 
-enum UserInputType { singleChoice }
+/// All possible types of user input.
+enum UserInputType {
+  singleChoice,
+  freeText,
+}
 
-class UserInput {
-  UserInput.singleChoice({@required this.singleChoiceTitles})
+/// Requests the chatbot to show some type of input to the user.
+class UserInputRequest {
+  UserInputRequest.singleChoice({@required this.singleChoiceTitles})
       : assert(singleChoiceTitles.isNotEmpty),
         type = UserInputType.singleChoice;
 
+  UserInputRequest.freeText()
+      : type = UserInputType.freeText,
+        singleChoiceTitles = null;
+
+  /// What type of input is requested.
   final UserInputType type;
 
-  // for single choice
+  /// Only for [UserInputType.singleChoice].
   final List<String> singleChoiceTitles;
 }
 
+/// The user has responded to the requested input.
+///
+/// Contains the results of the response.
 class UserInputResponse {
-  UserInputResponse.singleChoice({@required this.selectedChoice})
-      : type = UserInputType.singleChoice;
+  UserInputResponse.singleChoice({@required this.selectedChoiceIndex})
+      : type = UserInputType.singleChoice,
+        userInputText = null;
 
+  UserInputResponse.freeText({@required this.userInputText})
+      : type = UserInputType.freeText,
+        selectedChoiceIndex = null;
+
+  /// What type of input was requested.
   final UserInputType type;
 
-  // for single choice
-  final int selectedChoice;
+  /// Only for [UserInputType.singleChoice].
+  final int selectedChoiceIndex;
+
+  /// Only for [UserInputType.freeText].
+  final String userInputText;
 }

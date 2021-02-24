@@ -545,7 +545,7 @@ class Parser {
         _checkToken(TokenType.string);
         choice.title = _prevToken.value;
 
-        // a choice must have a block of statements
+        // A choice must have a block of statements
         // to check if there is a block we need 2 lookahead tokens
         // (because a NEWLINE could also mean the start of a new statement)
         // that is the reason why this grammar is not LL1 but LL2
@@ -562,14 +562,100 @@ class Parser {
       // choices must end with a DEDENT
       _checkToken(TokenType.dedent);
 
-      node.singleChoiceList = choices;
+      node.choices = choices;
+    } else if (_currentToken.type == TokenType.freeText) {
+      node.lineStart = _currentToken.line;
+      node.type = InputType.freeText;
+
+      _eat();
+      _checkToken(TokenType.newLine);
+      _checkToken(TokenType.indent);
+
+      // Parse patterns.
+      // A free-text input must have at least one `when` pattern.
+      final patterns = <Pattern>[];
+      do {
+        // A single pattern must start with the `when` keyword.
+        _checkToken(TokenType.when);
+
+        final pattern = Pattern();
+
+        // A pattern must have a comma separated list of strings.
+        final strings = <String>[];
+        _checkToken(TokenType.string);
+        strings.add(_prevToken.value);
+        while (_currentToken.type == TokenType.comma) {
+          _eat();
+          _checkToken(TokenType.string);
+          strings.add(_prevToken.value);
+        }
+        pattern.strings = strings;
+
+        // A pattern must have a response it points to.
+        _checkToken(TokenType.respond);
+        _checkToken(TokenType.string);
+        pattern.responseName = _prevToken.value;
+
+        // A single pattern must end with a NEWLINE.
+        _checkToken(TokenType.newLine);
+      } while (_currentToken.type == TokenType.when);
+
+      // Parse responses.
+      // A free-text input must have at least one response.
+      final responses = <ResponseNode>[];
+      do {
+        // A single response must start with the `response` keyword.
+        _checkToken(TokenType.response);
+
+        final response = ResponseNode();
+
+        // A response must have a unique name.
+        _checkToken(TokenType.string);
+        response.name = _prevToken.value;
+
+        // A response must have a block.
+        // To check if there is a block we need 2 lookahead tokens
+        // (because a NEWLINE could also mean the start of a new statement)
+        // that is the reason why this grammar is not LL1 but LL2.
+        if (_currentToken.type == TokenType.newLine &&
+            _nextToken.type == TokenType.indent) {
+          response.block = _parseBlock();
+        } else {
+          _error('Response must not be empty (has no statements)!');
+        }
+      } while (_currentToken.type == TokenType.response);
+
+      // Optionally, there can be a fallback response.
+      ResponseNode fallback;
+      if (_currentToken.type == TokenType.fallback) {
+        _eat();
+
+        fallback = ResponseNode();
+        fallback.name = '__fallback__';
+
+        // A fallback must have a block.
+        if (_currentToken.type == TokenType.newLine &&
+            _nextToken.type == TokenType.indent) {
+          fallback.block = _parseBlock();
+        } else {
+          _error('Fallback must not be empty (has no statements)!');
+        }
+      }
+
+      // The free text must end with a DEDENT
+      _checkToken(TokenType.dedent);
+
+      // Set the input node´s properties accordingly.
+      node.patterns = patterns;
+      node.responses = responses;
+      node.fallback = fallback;
     } else {
       _error('Invalid input statement: ${_currentToken.type}');
     }
 
     // -1 because the last choice ends with a block and therefore
     // _prevToken.line is the position of the dedent which is one line
-    // further than the input statement actually spans
+    // further than the input statement actually spans.
     node.lineEnd = _prevToken.line - 1;
     return node;
   }
