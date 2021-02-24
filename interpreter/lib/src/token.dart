@@ -38,9 +38,18 @@ enum TokenType {
   addTag,
   removeTag,
   clearTags,
+  // Input
   input,
   singleChoice,
   choice,
+  // Free Text Input
+  freeText,
+  when,
+  comma,
+  respond,
+  response,
+  fallback,
+  // Conditions
   if_,
   else_,
   hasTag,

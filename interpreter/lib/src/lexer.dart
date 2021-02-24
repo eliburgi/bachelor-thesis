@@ -42,6 +42,11 @@ class Lexer {
     'input': TokenType.input,
     'singleChoice': TokenType.singleChoice,
     'choice': TokenType.choice,
+    'freeText': TokenType.freeText,
+    'when': TokenType.when,
+    'respond': TokenType.respond,
+    'response': TokenType.response,
+    'fallback': TokenType.fallback,
     'if': TokenType.if_,
     'else': TokenType.else_,
     'hasTag': TokenType.hasTag,
@@ -140,6 +145,13 @@ class Lexer {
       return t;
     }
 
+    if (_currentChar == ',') {
+      t.type = TokenType.comma;
+      t.rawValue = ',';
+      _readNextCharacter();
+      _log('next - detected token: $t');
+      return t;
+    }
     if (_currentChar == '<') {
       _readNextCharacter();
       if (_currentChar == '=') {
@@ -333,7 +345,7 @@ class Lexer {
   /// to its actual starting value which is 0.
   int _col = -1;
 
-  //! TODO: remove
+  //? TODO: Remove?
   String _lineStr;
 
   /// Keeps track of how often a tabulator has been used
@@ -397,6 +409,10 @@ class Lexer {
   }
 }
 
+/// Represents errors that happen during the lexographic analysis
+/// of a source code.
+///
+/// For example, the [Lexer] might detect an invalid character.
 class LexerError {
   LexerError(this.message, this.line, this.col);
 

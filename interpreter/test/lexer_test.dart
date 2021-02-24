@@ -396,4 +396,65 @@ flow 'main'
       Token(type: TokenType.eof),
     ]);
   });
+
+  test('input freeText', () {
+    String program = '''
+flow 'main'
+  input freeText
+    when 'hi', 'hello', 'hey' respond 'greetings'
+    response 'greetings'
+      send text 'Hello human ...'
+    fallback 
+      send text 'I don´t understand this.'
+''';
+
+    var lexer = Lexer(program);
+    var parsedTokens = <Token>[];
+    var token = lexer.next();
+    while (token.type != TokenType.eof) {
+      parsedTokens.add(token);
+      token = lexer.next();
+    }
+    parsedTokens.add(token);
+
+    expect(parsedTokens, [
+      Token(type: TokenType.flow),
+      Token(type: TokenType.string, value: 'main'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.indent),
+      Token(type: TokenType.input),
+      Token(type: TokenType.freeText),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.indent),
+      Token(type: TokenType.when),
+      Token(type: TokenType.string, value: 'hi'),
+      Token(type: TokenType.comma),
+      Token(type: TokenType.string, value: 'hello'),
+      Token(type: TokenType.comma),
+      Token(type: TokenType.string, value: 'hey'),
+      Token(type: TokenType.respond),
+      Token(type: TokenType.string, value: 'greetings'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.response),
+      Token(type: TokenType.string, value: 'greetings'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.indent),
+      Token(type: TokenType.send),
+      Token(type: TokenType.text),
+      Token(type: TokenType.string, value: 'Hello human ...'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.dedent),
+      Token(type: TokenType.fallback),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.indent),
+      Token(type: TokenType.send),
+      Token(type: TokenType.text),
+      Token(type: TokenType.string, value: 'I don´t understand this.'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.dedent),
+      Token(type: TokenType.dedent),
+      Token(type: TokenType.dedent),
+      Token(type: TokenType.eof),
+    ]);
+  });
 }
