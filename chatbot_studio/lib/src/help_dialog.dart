@@ -232,6 +232,19 @@ class HelpDialog extends StatelessWidget {
                                   '    <block>\n',
                               'Lets the user select from a list of choices.',
                             ),
+                            Example(
+                              '`send` text \'What is your name?\'\n'
+                                  '`input` freeText\n'
+                                  '  `when` \'Max\', \'Bob\', \'Joe\' respond \'greetings-male\'\n'
+                                  '  `when` \'Lisa\', \'Sarah\' respond \'greetings-female\'\n'
+                                  '  `response` \'greetings-male\'\n'
+                                  '    `send` text \'Yo bro.\'\n'
+                                  '  `response` \'greetings-female\'\n'
+                                  '    `send` text \'Yo sis.\'\n'
+                                  '  `fallback`\n'
+                                  '    `send` text \'Yo human.\'\n',
+                              'You can also use regular expressions.',
+                            ),
                           ],
                         ),
                       ),
