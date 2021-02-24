@@ -160,7 +160,8 @@ class SyntaxHighlighter extends TextEditingController {
     try {
       var token = lexer.next();
       while (token.type != TokenType.eof) {
-        if (token.type != TokenType.newLine &&
+        if (token.type != TokenType.comma &&
+            token.type != TokenType.newLine &&
             token.type != TokenType.indent &&
             token.type != TokenType.dedent) {
           tokens.add(token);

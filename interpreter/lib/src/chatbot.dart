@@ -124,11 +124,11 @@ class UserInputRequest {
 ///
 /// Contains the results of the response.
 class UserInputResponse {
-  UserInputResponse.singleChoice({@required this.selectedChoiceIndex})
+  UserInputResponse.singleChoice(this.selectedChoiceIndex)
       : type = UserInputType.singleChoice,
         userInputText = null;
 
-  UserInputResponse.freeText({@required this.userInputText})
+  UserInputResponse.freeText(this.userInputText)
       : type = UserInputType.freeText,
         selectedChoiceIndex = null;
 

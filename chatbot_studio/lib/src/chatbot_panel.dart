@@ -80,7 +80,7 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
   /// For example, the chatbot may wait until the user has selected an
   /// item from a list of single-choice options.
   @override
-  Future<UserInputResponse> waitForInput(UserInput input) {
+  Future<UserInputResponse> waitForInput(UserInputRequest input) {
     // Used to immediately return a future as return value which, however,
     // will only be completed when we receive the appropriate response.
     var completer = Completer<UserInputResponse>();
@@ -94,8 +94,7 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
         // Called when the user has selected a single-choice option.
         final handleChoiceSelected = (index) {
           // Build the response from the option the user has selected.
-          final response =
-              UserInputResponse.singleChoice(selectedChoice: index);
+          final response = UserInputResponse.singleChoice(index);
 
           // Update the single-choice chat message to reflect
           // the selected option.
@@ -115,6 +114,35 @@ class ChatbotPanelState extends State<ChatbotPanel> implements Chatbot {
           input: input,
           onSingleChoiceSelected: handleChoiceSelected,
         ));
+        break;
+      case UserInputType.freeText:
+        // The chatbot is asked to show a text field.
+        // It should wait until the user has entered some text
+        // and then respond to it.
+
+        // Called when the user has entered some text.
+        final handleTextEntered = (String text) {
+          // Build the response with the entered text.
+          final response = UserInputResponse.freeText(text);
+
+          // Update the chat message.
+          setState(() {
+            assert(_messages.last is _UserInputMessage);
+            _messages.removeLast();
+            _messages.add(_UserInputMessage(input: input, response: response));
+          });
+
+          // Finally, complete the returned future with this response.
+          completer.complete(response);
+        };
+
+        // Append the textfield as message to the chat.
+        sendMessage(
+          _UserInputMessage(
+            input: input,
+            onTextEntered: handleTextEntered,
+          ),
+        );
         break;
     }
 
@@ -440,46 +468,75 @@ class _UserInputMessage extends Message {
     @required this.input,
     this.response,
     this.onSingleChoiceSelected,
+    this.onTextEntered,
   });
 
-  final UserInput input;
+  final UserInputRequest input;
   final UserInputResponse response;
-  final Function(int) onSingleChoiceSelected;
+
+  final void Function(int) onSingleChoiceSelected;
+  final void Function(String) onTextEntered;
 }
 
-class _UserInputItem extends StatelessWidget {
+class _UserInputItem extends StatefulWidget {
   _UserInputItem(this.message);
 
   final _UserInputMessage message;
 
   @override
+  __UserInputItemState createState() => __UserInputItemState();
+}
+
+class __UserInputItemState extends State<_UserInputItem> {
+  TextEditingController _textController;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.message.input.type == UserInputType.freeText &&
+        widget.message.response == null) {
+      _textController = TextEditingController();
+      _textController.addListener(() {
+        setState(() {});
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _textController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Widget child;
-    switch (message.input.type) {
+    switch (widget.message.input.type) {
       case UserInputType.singleChoice:
         child = Scrollbar(
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: List.generate(
-              message.input.singleChoiceTitles.length,
+              widget.message.input.singleChoiceTitles.length,
               (index) {
                 var button = FlatButton(
-                  color: message.response != null
-                      ? (index == message.response.selectedChoice
+                  color: widget.message.response != null
+                      ? (index == widget.message.response.selectedChoiceIndex
                           ? Colors.blue
                           : Colors.blue.withOpacity(0.5))
                       : Colors.blue,
-                  onPressed: message.response != null
+                  onPressed: widget.message.response != null
                       ? () {}
-                      : () => message.onSingleChoiceSelected(index),
+                      : () => widget.message.onSingleChoiceSelected(index),
                   child: Text(
-                    message.input.singleChoiceTitles[index],
+                    widget.message.input.singleChoiceTitles[index],
                     style: Theme.of(context).textTheme.button.copyWith(
                           color: Colors.white,
                         ),
                   ),
                 );
-                if (index < message.input.singleChoiceTitles.length - 1) {
+                if (index <
+                    widget.message.input.singleChoiceTitles.length - 1) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 12.0),
                     child: button,
@@ -491,6 +548,37 @@ class _UserInputItem extends StatelessWidget {
           ),
         );
         break;
+      case UserInputType.freeText:
+        if (widget.message.response != null) {
+          child = Bubble(
+            margin: BubbleEdges.only(top: 10),
+            alignment: Alignment.topRight,
+            nip: BubbleNip.rightTop,
+            color: Colors.blue[100],
+            child: Text(widget.message.response.userInputText),
+          );
+        } else {
+          child = Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _textController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your answer',
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Send',
+                icon: Icon(Icons.send_rounded),
+                onPressed: _textController.text.trim().isNotEmpty
+                    ? () => widget.message.onTextEntered(_textController.text)
+                    : null,
+              ),
+            ],
+          );
+          break;
+        }
     }
     return Container(
       width: double.infinity,
