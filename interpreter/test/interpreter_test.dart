@@ -12,7 +12,7 @@ class MockedChatbot implements Chatbot {
   void sendMessage(Message message) {}
 
   @override
-  Future<UserInputResponse> waitForInput(UserInput input) {
+  Future<UserInputResponse> waitForInput(UserInputRequest input) {
     return Future.sync(() => null);
   }
 
