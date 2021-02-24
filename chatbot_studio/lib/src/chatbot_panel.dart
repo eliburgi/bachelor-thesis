@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -343,18 +344,7 @@ class _MessageItem extends StatelessWidget {
         );
         break;
       case MessageType.audio:
-        child = CircleAvatar(
-          radius: 24.0,
-          backgroundColor: Colors.grey[100],
-          child: IconButton(
-            tooltip: 'Play Audio',
-            color: Colors.black,
-            icon: Icon(Icons.play_arrow),
-            onPressed: () {
-              // todo: play audio
-            },
-          ),
-        );
+        child = AudioButton(url: message.body);
         break;
       case MessageType.event:
         return Center(
@@ -585,6 +575,60 @@ class __UserInputItemState extends State<_UserInputItem> {
       height: 64.0,
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
       child: child,
+    );
+  }
+}
+
+class AudioButton extends StatefulWidget {
+  AudioButton({
+    Key key,
+    @required this.url,
+  }) : super(key: key);
+
+  final String url;
+
+  @override
+  _AudioButtonState createState() => _AudioButtonState();
+}
+
+class _AudioButtonState extends State<AudioButton> {
+  AudioPlayer _audioPlayer;
+  StreamSubscription _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioPlayer = AudioPlayer();
+    _sub = _audioPlayer.onPlayerStateChanged.listen((state) {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub.cancel();
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool isPlaying = _audioPlayer.state == AudioPlayerState.PLAYING;
+    return CircleAvatar(
+      radius: 24.0,
+      backgroundColor: Colors.grey[100],
+      child: IconButton(
+        tooltip: 'Play Audio',
+        color: Colors.black,
+        icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+        onPressed: () async {
+          if (isPlaying) {
+            await _audioPlayer.stop();
+          } else {
+            await _audioPlayer.play(widget.url);
+          }
+        },
+      ),
     );
   }
 }
