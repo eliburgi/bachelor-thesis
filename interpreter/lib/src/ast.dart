@@ -1,13 +1,8 @@
 import 'dart:ui';
 
-import 'package:interpreter/src/chatbot.dart';
-
+import 'chatbot.dart';
 import 'interpreter.dart';
-
-//! todo: free text input node
-//! todo: if node
-//! todo: action node
-//! todo: create counter node
+import 'string_interpolation.dart';
 
 abstract class ASTNode {
   /// Optional. The line in which the first token that belongs to this node
@@ -313,8 +308,8 @@ class SendStatementNode extends ASTNode {
     if (params.containsKey('delay') && params['delay'] is int) {
       delayInMilliseconds = params['delay'];
     } else if (context.dynamiciallyDelayMessages) {
-      // compute delay for this message based on type and body
-      // todo: compute based on some algorithm
+      //? TODO: Compute based on some algorithm.
+      // Compute delay for this message based on type and body.
       delayInMilliseconds = 300;
     } else {
       delayInMilliseconds = context.delayInMilliseconds;
@@ -329,25 +324,7 @@ class SendStatementNode extends ASTNode {
       context.chatbot.removeLastMessage();
     }
 
-    // perform string interpolation
-    var regex = RegExp(r"\$[^\s]+");
-    var interpolatedBody = messageBody.replaceAllMapped(regex, (match) {
-      // start at start+1 as we do not want the $ in our template
-      var template = messageBody.substring(match.start + 1, match.end);
-      log(context, 'TEMPLATE: $template');
-
-      if (template == 'tags') {
-        return context.tags.toString();
-      }
-      if (context.counters.containsKey(template)) {
-        var counterValue = context.counters[template].value;
-        return counterValue.toString();
-      }
-      // instead of throwing an error here we simply return the template.
-      return template;
-    });
-
-    // create the message to be sent
+    // Create the message to be sent.
     MessageType type;
     switch (this.messageType) {
       case SendMessageType.text:
@@ -365,7 +342,7 @@ class SendStatementNode extends ASTNode {
     }
     Message message = Message(
       type: type,
-      body: interpolatedBody,
+      body: interpolateString(context, messageBody),
       params: params,
       sender: context.currentSender, // may be null
     );
@@ -454,13 +431,21 @@ class ActionStatementNode extends ASTNode {
   /// Which type of action should be performed.
   ActionType actionType;
 
-  /// The name of a counter or tag (depending on `actionType`).
-  /// Will be `null` for [ActionType.clearTags].
-  String name;
+  /// Only for [ActionType.increment], [ActionType.decrement] and .
+  /// [ActionType.set_]
+  String counterName;
 
+  /// Only for [ActionType.increment], [ActionType.decrement] and .
+  /// [ActionType.set_]
+  ///
   /// The value for incrementing/decrementing/setting a counter.
-  /// Otherwise `null`.
-  int value;
+  int counterOpValue;
+
+  /// Only for [ActionType.addTag] and [ActionType.removeTag].
+  String tagKey;
+
+  /// Only for [ActionType.addTag].
+  String tagValue;
 
   @override
   Future<void> execute(RuntimeContext context) async {
@@ -471,31 +456,43 @@ class ActionStatementNode extends ASTNode {
     // perform the actual action
     switch (actionType) {
       case ActionType.increment:
-        var counter = context.counters[name];
+        assert(counterName != null);
+        assert(counterOpValue != null);
+
+        var counter = context.counters[counterName];
         if (counter == null) {
-          error('Counter $name does not exist!');
+          error('Counter $counterName does not exist!');
         }
-        counter.value += value;
+        counter.value += counterOpValue;
         break;
       case ActionType.decrement:
-        var counter = context.counters[name];
+        assert(counterName != null);
+        assert(counterOpValue != null);
+
+        var counter = context.counters[counterName];
         if (counter == null) {
-          error('Counter $name does not exist!');
+          error('Counter $counterName does not exist!');
         }
-        counter.value -= value;
+        counter.value -= counterOpValue;
         break;
       case ActionType.set_:
-        var counter = context.counters[name];
+        assert(counterName != null);
+        assert(counterOpValue != null);
+
+        var counter = context.counters[counterName];
         if (counter == null) {
-          error('Counter $name does not exist!');
+          error('Counter $counterName does not exist!');
         }
-        counter.value = value;
+        counter.value = counterOpValue;
         break;
       case ActionType.addTag:
-        context.tags.add(name);
+        assert(tagKey != null);
+        assert(tagValue != null);
+        context.tags[tagKey] = interpolateString(context, tagValue);
         break;
       case ActionType.removeTag:
-        context.tags.remove(name);
+        assert(tagKey != null);
+        context.tags.remove(tagKey);
         break;
       case ActionType.clearTags:
         context.tags.clear();
@@ -771,7 +768,7 @@ class ConditionNode extends ASTNode {
         break;
       case ConditionType.hasTag:
         assert(name != null);
-        isTrue = context.tags.contains(name);
+        isTrue = context.tags.containsKey(name);
         break;
     }
 

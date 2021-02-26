@@ -448,13 +448,6 @@ class Parser {
 
     var node = ActionStatementNode();
 
-    // 'increment' STRING 'by' INTEGER
-    // | 'decrement' STRING 'by' INTEGER
-    // | 'set' STRING 'to' INTEGER
-    // | 'addTag' STRING
-    // | 'removeTag' STRING
-    // | 'clearTags'
-
     // an action statement must start with the action keyword
     node.lineStart = _currentToken.line;
     _checkToken(TokenType.action);
@@ -465,40 +458,51 @@ class Parser {
         _eat();
         node.actionType = ActionType.increment;
         _checkToken(TokenType.string);
-        node.name = _prevToken.value;
+        node.counterName = _prevToken.value;
         _checkToken(TokenType.by);
         _checkToken(TokenType.integer);
-        node.value = _prevToken.value;
+        node.counterOpValue = _prevToken.value;
         break;
       case TokenType.decrement:
         _eat();
         node.actionType = ActionType.decrement;
         _checkToken(TokenType.string);
-        node.name = _prevToken.value;
+        node.counterName = _prevToken.value;
         _checkToken(TokenType.by);
         _checkToken(TokenType.integer);
-        node.value = _prevToken.value;
+        node.counterOpValue = _prevToken.value;
         break;
       case TokenType.set_:
         _eat();
         node.actionType = ActionType.set_;
         _checkToken(TokenType.string);
-        node.name = _prevToken.value;
+        node.counterName = _prevToken.value;
         _checkToken(TokenType.to);
         _checkToken(TokenType.integer);
-        node.value = _prevToken.value;
+        node.counterOpValue = _prevToken.value;
         break;
       case TokenType.addTag:
         _eat();
         node.actionType = ActionType.addTag;
+        // Every tag needs a value.
         _checkToken(TokenType.string);
-        node.name = _prevToken.value;
+        String value = _prevToken.value;
+        // Every tag needs a key. But if not given the value is used as a key.
+        String key;
+        if (_currentToken.type == TokenType.string) {
+          _eat();
+          key = _prevToken.value;
+        }
+        key ??= value;
+        // Set the node´s properties.
+        node.tagKey = key;
+        node.tagValue = value;
         break;
       case TokenType.removeTag:
         _eat();
         node.actionType = ActionType.removeTag;
         _checkToken(TokenType.string);
-        node.name = _prevToken.value;
+        node.tagKey = _prevToken.value;
         break;
       case TokenType.clearTags:
         _eat();

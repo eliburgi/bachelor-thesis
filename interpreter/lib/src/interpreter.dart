@@ -126,7 +126,7 @@ class RuntimeContext {
 
   /// Contains all active tags that have been added via 'action addTag ...'
   /// statement.
-  Set<String> tags = {};
+  Map<String, String> tags = {};
 
   /// Whether messages sent via 'send' statement should be delayed dynamically.
   ///

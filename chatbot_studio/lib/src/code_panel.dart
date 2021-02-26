@@ -143,12 +143,16 @@ class CodePanelState extends State<CodePanel> {
       // as well as any errors that occured. This kind of editor is used
       // to highlight running programs but NOT to actually allow the user
       // to edit the source code.
-      editor = RichText(
-        text: SyntaxHighlighter.highlight(
-          sourceCode,
-          beginStmtLine: _highlightedLineStart,
-          endStmtLine: _highlightedLineEnd,
-          errorLine: _highlightedErrorLine,
+      editor = Scrollbar(
+        child: SingleChildScrollView(
+          child: RichText(
+            text: SyntaxHighlighter.highlight(
+              sourceCode,
+              beginStmtLine: _highlightedLineStart,
+              endStmtLine: _highlightedLineEnd,
+              errorLine: _highlightedErrorLine,
+            ),
+          ),
         ),
       );
 

@@ -8,7 +8,7 @@ import 'package:bubble/bubble.dart';
 
 import 'package:interpreter/interpreter.dart';
 
-// used for state management
+/// Used for global state management.
 final chatbotPanelKey = GlobalKey<ChatbotPanelState>();
 
 /// Visualizes a conversation with a chatbot. It does so similar to

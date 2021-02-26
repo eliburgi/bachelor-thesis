@@ -457,4 +457,60 @@ flow 'main'
       Token(type: TokenType.eof),
     ]);
   });
+
+  test('action increment', () {
+    String program = '''
+set delay 1000
+create counter 'myCounter'
+
+flow 'main'
+  send text 'Let´s have sun fun with actions! Shall we?'
+  send text '1) You can increment the value of a counter'
+  action increment 'myCounter' by 50
+''';
+
+    var lexer = Lexer(program);
+    var parsedTokens = <Token>[];
+    var token = lexer.next();
+    while (token.type != TokenType.eof) {
+      parsedTokens.add(token);
+      token = lexer.next();
+    }
+    parsedTokens.add(token);
+
+    expect(parsedTokens, [
+      Token(type: TokenType.set_),
+      Token(type: TokenType.delay),
+      Token(type: TokenType.integer, value: 1000),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.create),
+      Token(type: TokenType.counter),
+      Token(type: TokenType.string, value: 'myCounter'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.flow),
+      Token(type: TokenType.string, value: 'main'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.indent),
+      Token(type: TokenType.send),
+      Token(type: TokenType.text),
+      Token(
+          type: TokenType.string,
+          value: 'Let´s have sun fun with actions! Shall we?'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.send),
+      Token(type: TokenType.text),
+      Token(
+          type: TokenType.string,
+          value: '1) You can increment the value of a counter'),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.action),
+      Token(type: TokenType.increment),
+      Token(type: TokenType.string, value: 'myCounter'),
+      Token(type: TokenType.by),
+      Token(type: TokenType.integer, value: 50),
+      Token(type: TokenType.newLine),
+      Token(type: TokenType.dedent),
+      Token(type: TokenType.eof),
+    ]);
+  });
 }
