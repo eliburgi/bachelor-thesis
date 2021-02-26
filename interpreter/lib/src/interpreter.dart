@@ -114,6 +114,12 @@ class RuntimeContext {
   /// attached to it.
   Sender currentSender;
 
+  /// The most recent text that was entered by the user in a
+  /// free-text input.
+  ///
+  /// May be `null`.
+  String userInputText;
+
   /// Contains all senders created via a 'create sender ...' statement.
   ///
   /// The name of the sender is used as a key.

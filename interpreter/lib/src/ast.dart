@@ -591,6 +591,9 @@ class InputStatementNode extends ASTNode {
         log(context, 'execute - USER DID INPUT $response');
         final userInputText = response.userInputText;
 
+        // Store the entered text in the context.
+        context.userInputText = userInputText;
+
         // Try to match the entered text to a pattern.
         Pattern matchingPattern;
         for (var pattern in patterns) {

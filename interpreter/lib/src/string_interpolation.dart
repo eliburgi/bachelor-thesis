@@ -37,9 +37,13 @@ String interpolateString(RuntimeContext context, String rawString) {
     }
 
     // Check if we are interpolating a single tag (by key).
-    if (context.counters.containsKey(template)) {
-      var counterValue = context.counters[template].value;
-      return counterValue.toString();
+    if (context.tags.containsKey(template)) {
+      return context.tags[template];
+    }
+
+    // Check if we are interpolating the most recent user input.
+    if (template == 'userInputText') {
+      return context.userInputText ?? '';
     }
 
     // Unknown interpolation value.
