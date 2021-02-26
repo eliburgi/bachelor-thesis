@@ -23,7 +23,8 @@ class SyntaxHighlighter extends TextEditingController {
     try {
       var token = lexer.next();
       while (token.type != TokenType.eof) {
-        if (token.type != TokenType.comma && token.type != TokenType.newLine &&
+        if (token.type != TokenType.comma &&
+            token.type != TokenType.newLine &&
             token.type != TokenType.indent &&
             token.type != TokenType.dedent) {
           tokens.add(token);
@@ -312,41 +313,13 @@ const _kTokenStyles = {
   TokenType.clearTags: _kKeywordStyle,
   TokenType.input: _kKeywordStyle,
   TokenType.singleChoice: _kKeywordStyle,
+  TokenType.freeText: _kKeywordStyle,
+  TokenType.when: _kKeywordStyle,
+  TokenType.response: _kKeywordStyle,
+  TokenType.respond: _kKeywordStyle,
+  TokenType.fallback: _kKeywordStyle,
   TokenType.choice: _kKeywordStyle,
   TokenType.if_: _kKeywordStyle,
   TokenType.else_: _kKeywordStyle,
   TokenType.hasTag: _kKeywordStyle,
-};
-
-const _kKeywords = {
-  TokenType.create,
-  TokenType.sender,
-  TokenType.counter,
-  TokenType.set_,
-  TokenType.delay,
-  TokenType.dynamic_,
-  TokenType.flow,
-  TokenType.startFlow,
-  TokenType.endFlow,
-  TokenType.send,
-  TokenType.text,
-  TokenType.image,
-  TokenType.audio,
-  TokenType.event,
-  TokenType.wait,
-  TokenType.click,
-  TokenType.action,
-  TokenType.increment,
-  TokenType.by,
-  TokenType.decrement,
-  TokenType.to,
-  TokenType.addTag,
-  TokenType.removeTag,
-  TokenType.clearTags,
-  TokenType.input,
-  TokenType.singleChoice,
-  TokenType.choice,
-  TokenType.if_,
-  TokenType.else_,
-  TokenType.hasTag,
 };

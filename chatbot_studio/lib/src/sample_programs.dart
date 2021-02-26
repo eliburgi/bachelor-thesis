@@ -210,4 +210,75 @@ flow 'loop'
   startFlow 'main'
 ''',
   },
+  {
+    'name': 'Order Pizza',
+    'src': '''
+create counter 'pizza-count'
+set delay 700
+
+flow 'main'
+  send text 'Welcome at Buenos Pizzas. What would you like to order?'
+  input singleChoice
+    choice 'Pizza'
+      startFlow 'order-pizza'
+      startFlow 'goodbye'
+    choice 'Nothing'
+      startFlow 'goodbye'
+      endFlow
+
+flow 'order-pizza'
+  send text 'Which Pizza would you like?'
+  input freeText
+    when 'Salami', 'salami' respond 'choose-salami'
+    when 'Margarita', 'margarita' respond 'choose-margarita'
+    when 'Veggie', 'veggie' respond 'choose-veggie'
+    response 'choose-salami'
+      send text 'Good choice. We use organic salami.'
+      send text 'Here is a picture of our salami pizza.'
+      send image 'https://ais.kochbar.de/kbrezept/44326_17343/1200x1200/pizza-salami-rezept.jpg'
+      action addTag 'salami' 'pizza-type'
+    response 'choose-margarita'
+      send text 'Good choice.'
+      send text 'Here is a picture of our margarita pizza.'
+      send image 'https://img2.kochrezepte.at/use/1/pizza-margherita-auf-die-schnelle-art_1192.jpg'
+      action addTag 'margarita' 'pizza-type'
+    response 'choose-veggie'
+      send text 'Good choice. The world should eat more veggies anyway.'
+      send text 'Here is a picture of our veggie pizza.'
+      send image 'https://lifeisfullofgoodies.com/wp-content/uploads/2017/06/9-1-1.jpg'
+      action addTag 'veggie' 'pizza-type'
+    fallback 
+      send text 'Sorry, we don´t have this pizza.'
+      startFlow 'order-pizza'
+      endFlow
+ 
+  send text 'Now enter the size of your pizza.'
+  input singleChoice
+    choice 'normal'
+      action addTag 'normal' 'pizza-size'
+    choice 'large'
+      action addTag 'large' 'pizza-size'
+  
+  send text 'Please enter your delivery address.'
+  input freeText
+    when 'Why do you need it?' respond 'help'
+    response 'help'
+      send text 'We need your address to deliver your pizza to you :)'
+  action addTag '\$userInputText' 'address'
+  
+  send text 'Ok. So you want to order a \$pizza-size \$pizza-type pizza to \$address ?'  
+  input singleChoice
+    choice 'Yes'
+      send text 'Perfect. We notify you when the pizza is baked.'
+    choice 'Cancel'
+      send text 'No problem, we´ve cancelled your order.'
+      endFlow
+  wait event 'pizza-ready-for-delivery'
+  send text 'Your pizza is ready and will now be delivered to you.'
+  send text 'Enjoy the meal :)'
+
+flow 'goodbye'
+  send text 'Have a nice day! Bye.'
+''',
+  },
 ];
