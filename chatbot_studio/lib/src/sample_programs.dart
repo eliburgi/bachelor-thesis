@@ -6,26 +6,19 @@ const List<Map<String, dynamic>> SAMPLE_PROGRAMS = [
 set delay 700
 flow 'main'
   send text 'Hello World'
+  send text 'You can program me however you like.'
 ''',
   },
   {
-    'name': 'Hello Image',
+    'name': 'Send Statement',
     'src': '''
 set delay 700
 flow 'main'
-  send text 'This is my new favorite image'
-  send text 'I hope you like it'
+  send text 'Obviously, you can send text messages.'
+  send text 'You can also send images.'
   send image 'https://picsum.photos/200'
-''',
-  },
-  {
-    'name': 'Hello Audio',
-    'src': '''
-set delay 700
-flow 'main'
-  send text 'This is my new song'
-  send text 'I hope you like it'
-  send audio 'TODO: Paste URL'
+  send text 'And audio too.'
+  send audio 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
 ''',
   },
   {
@@ -33,7 +26,6 @@ flow 'main'
     'src': '''
 set delay 700
 flow 'main'
-  send text 'This is my new song'
   send text 'Here is the new task you have to solve'
   send event 'task'
   send text 'Now, complete your task!'
@@ -79,46 +71,11 @@ flow 'loop'
 ''',
   },
   {
-    'name': 'Infinite Loop with Image',
-    'src': '''
-set delay 700
-flow 'main'
-  send text 'I'
-  send text 'am'
-  send image 'https://picsum.photos/200'
-  send text 'infinite loop'
-  startFlow 'loop'
-
-flow 'loop'
-  send text 'Oh really?'
-  startFlow 'main'
-''',
-  },
-  {
-    'name': 'Infinite Loop with Sender',
-    'src': '''
-create sender 'John Doe'
-  avatarUrl = 'https://picsum.photos/id/1011/300/300'
-set sender 'John Doe'
-set delay 700
-
-flow 'main'
-  send text 'I'
-  send text 'am'
-  send text 'infinite loop'
-  startFlow 'loop'
-
-flow 'loop'
-  send text 'Oh really?'
-  startFlow 'main'
-''',
-  },
-  {
     'name': 'Single Choice Input',
     'src': '''
 create sender 'Laura B.'
   avatarUrl = 'https://picsum.photos/id/1011/300/300'
-set sender 'Laura B.'
+set sender 'Sarah P.'
 set delay 700
 
 flow 'main'
@@ -126,9 +83,9 @@ flow 'main'
   send text 'What is your favorite color?'
   input singleChoice
     choice 'green'
-      send text 'Sounds like you are a nature person 🌳'
+      send text 'Sounds like you are a nature person.'
     choice 'orange'
-      send text 'You like pumpkins 🎃'
+      send text 'You like pumpkins.'
     choice 'yellow'
       send text 'You are so bright :)'
   startFlow 'loop'
@@ -136,6 +93,44 @@ flow 'main'
 flow 'loop'
   send text 'Oh really?'
   startFlow 'main'
+''',
+  },
+  {
+    'name': 'Free Text Input',
+    'src': '''
+set delay 700
+
+flow 'main'
+  send text 'You can ask the user to enter some text.'
+  send text 'For example, I could ask you what´s your favorite sport?'
+  input freeText
+    when 'soccer', 'basketball', 'tennis' respond 'ball-sport'
+    when 'swimming', 'running', 'biking' respond 'triathlon'
+    response 'ball-sport'
+      send text 'Yeah, who doesn´t like ball sports. Seriously.'
+    response 'triathlon'
+      send text 'Great.'
+      send text 'It takes a lot of endurance to get good at \$userInputText'
+    fallback
+      send text 'Ohh I did not think about \$userInputText'
+      send text 'But I´m sure it´s a great sport too.'
+''',
+  },
+  {
+    'name': 'Echo',
+    'src': '''
+set delay 700
+flow 'main'
+  send text 'Type quit to exit.'
+  startFlow 'loop'
+
+flow 'loop'
+  input freeText
+    when 'quit' respond 'quit'
+    response 'quit' 
+      endFlow
+  send text '\$userInputText'
+  startFlow 'loop'
 ''',
   },
   {
@@ -213,7 +208,9 @@ flow 'loop'
   {
     'name': 'Order Pizza',
     'src': '''
-create counter 'pizza-count'
+create sender 'Buenos Pizzas'
+  avatarUrl = 'https://image.freepik.com/vektoren-kostenlos/pizza-logo-design-vektor-vorlage_260747-60.jpg'
+set sender 'Buenos Pizzas'
 set delay 700
 
 flow 'main'
@@ -279,6 +276,122 @@ flow 'order-pizza'
 
 flow 'goodbye'
   send text 'Have a nice day! Bye.'
+''',
+  },
+  {
+    'name': 'Austria FAQ',
+    'src': '''
+create counter 'questions-asked'
+
+create sender 'Oetzi'
+  avatarUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Flag_of_Austria.svg/255px-Flag_of_Austria.svg.png'
+set sender 'Oetzi'
+
+set delay 1500
+
+flow 'main'
+  send text 'Hello I am Oetzi, an Austria Bot.'
+  send text 'I can answer common questions about Austria.'
+  send text 'You can ask me about food or sports.'
+  startFlow 'ask-me'
+  send text 'You have asked me \$questions-asked questions.'
+  send text 'I am glad I could help you.'
+  send text 'Have a good day. Bye :)'
+
+flow 'ask-me'
+  send text 'What would you like to know?'
+  input freeText
+    when '[.]*soccer|football|sv-ried[.]*' respond 'sport-soccer'
+    when '[.]*ski|skiing|snow|sport[.]*' respond 'sport-ski'
+    when '[.]*food|foods|eat|eating|kitchen|cuisine[.]*' respond 'food'
+    response 'sport-soccer'
+      send text 'Austria is decent at soccer.'
+      send text 'In 1978 Austria even managed to get under the best 8 teams in the world finals.'
+    response 'sport-ski'
+      send text 'Ahh skiing. This is Austria´s signatur sport discipline.'
+      send text 'Great names such as Hermann Maier and Marcel Hirscher are from Austria.'
+      send text 'But many locals enjoy skiing just as much as the pros.'
+      send image 'https://mogasimagazin.com/wp-content//uploads/2019/09/skigebiet-kappl-2019-3.jpg'
+    response 'food'
+      send text 'Ahh food. You´ve probably heard of the Wiener Schnitzel right?'
+      send image 'https://upload.wikimedia.org/wikipedia/commons/a/ae/Wiener-Schnitzel02.jpg'
+      send text 'And the sweets. Austrian people love their sweet cakes.'  
+      send text 'You gotta try Sachertorte or Apfelstrudel once. It´s so good.'
+    fallback
+      send text 'Sorry I do not understand this question.'
+  action increment 'questions-asked' by 1
+   
+  send text 'Do you have another question?'
+  input singleChoice
+    choice 'Yes'
+      startFlow 'ask-me'
+    choice 'No'
+      endFlow
+''',
+  },
+  {
+    'name': 'Computer Science Quiz',
+    'src': '''
+create counter 'points'
+create sender 'A. Turing'
+set sender 'A. Turing'
+set delay 900
+
+flow 'main'
+  action set 'points' to 0
+  send text 'How much do you know about Computer Science? Find out now!'
+  send text 'Are you ready?'
+  input singleChoice
+    choice 'Yes'
+      send text 'Let´s begin!'
+    choice 'No'
+      send text 'No problem. See you later.'
+      endFlow
+  send text '1) Linux is ...'
+  input singleChoice
+    choice 'a browser'
+      send text 'Wrong. Linux is an operating system.'
+    choice 'an operating system'
+      action addTag 'q1'
+      action increment 'points' by 10
+      send text 'Correct!'
+    choice 'an app'
+      send text 'Wrong. Linux is an operating system.'
+  send text 'You have \$points points'
+  send text '2) Ruby is the name of a programming language.'
+  input singleChoice
+    choice 'True'
+      action addTag 'q2'
+      action increment 'points' by 10
+      send text 'Correct!'
+    choice 'False'
+      send text 'Wrong. Ruby is indeed the name of a popular programming language.'
+  send text 'You have \$points points'
+  send text 'Last question.'
+  send text '3) What is the name of the first chatbot ever?'
+  input singleChoice
+    choice 'ELIZA'
+      action addTag 'q3'
+      action increment 'points' by 10
+      send text 'Correct! It was developed 1966 at the MIT.'
+    choice 'MATRIX'
+      send text 'Wrong. The first chatbot was developed 1966 at the MIT and was called ELIZA.'
+    choice 'ALEXA'
+      send text 'Wrong. The first chatbot was developed 1966 at the MIT and was called ELIZA.'
+  send text 'You have \$points points'
+  if counter 'points' == 30
+    send text 'Awesome, all questions were correct. You´re a CS pro!'
+  if counter 'points' == 20
+    send text 'Not too bad. Two out of three.'
+  if counter 'points' == 10
+    send text 'One out of three. You´re not a very techy person right?'
+  if counter 'points' == 0
+    send text 'Well done. You´ve answered everything wrongly.'
+    send text 'That´s almost as hard as answering everything correctly.'
+    send text 'You could be a hidden genius ...'
+  send text 'Anyway, thanks for playing.'
+  send text 'Feel free to add your own questions and share them with your friends.'
+  send text 'You sure have a better humor than I do, haha :P'
 ''',
   },
 ];

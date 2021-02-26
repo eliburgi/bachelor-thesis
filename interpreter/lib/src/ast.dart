@@ -667,7 +667,13 @@ class Pattern {
   /// matches the given [userInputText].
   bool matches(String userInputText) {
     for (var string in strings) {
-      final regex = RegExp(string);
+      var regex = RegExp(
+        r'' + string + '',
+        caseSensitive: false,
+      );
+      // if (string.startsWith('/')) {
+      //   regex = RegExp(string);
+      // }
       if (regex.hasMatch(userInputText)) {
         return true;
       }
