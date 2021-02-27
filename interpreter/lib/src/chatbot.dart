@@ -1,5 +1,9 @@
 import 'package:meta/meta.dart';
 
+/// Interface for a chatbot.
+///
+/// The [Interpreter] that executes the AST nodes, delegates
+/// work to the chatbot, such as sending a message, etc.
 abstract class Chatbot {
   /// Clears all messages from the chat history.
   void clear();

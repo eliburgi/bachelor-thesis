@@ -5,11 +5,11 @@ import 'package:interpreter/src/util.dart';
 ///
 /// The lexographic analysis represents the first step of every compiler
 /// or interpreter. The goal of this step is to transform the raw program
-/// code (stream of characters) into a stream of tokens.
-/// A token represents # todo
+/// code (stream of characters) into a stream of [Token]s.
 ///
 /// Other tasks of the Lexer include:
-/// - ignoring white space or empty lines
+/// * ignoring white space or empty lines
+/// * indent & dedent detection
 class Lexer {
   static const NEWLINE = '\n';
   static const EOF = 'U+ffff'; // unspecified unicode point

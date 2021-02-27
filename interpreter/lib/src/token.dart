@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+/// All occurring token types of this custom chatbot DSL.
 enum TokenType {
   // SPECIAL TOKENS
   none,
@@ -62,7 +63,8 @@ enum TokenType {
   equals,
 }
 
-/// A Token represents a special todo.
+/// The [Lexer] transforms the source code into a stream of [Token]s
+/// that the [Parser] uses to build an abstract syntax tree (AST).
 class Token {
   Token({
     this.type = TokenType.none,

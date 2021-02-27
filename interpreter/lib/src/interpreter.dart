@@ -5,6 +5,9 @@ import 'package:meta/meta.dart';
 import 'chatbot.dart';
 import 'parser.dart';
 
+/// The Interpreter uses the [Parser] to build the abstract syntax
+/// tree (AST) for a given source code.
+/// It then executes the source code (by interpreting) the AST.
 class Interpreter {
   Interpreter(
     this.parser,
@@ -18,6 +21,14 @@ class Interpreter {
 
   NodeVisitedCallback onNodeVisited;
 
+  /// Executes the AST built by the [parser].
+  ///
+  /// Starting at the root node of the AST, the interpreter recursively
+  /// calls the `execute` method.
+  /// The interpretation ends when AST is finished executing.
+  ///
+  /// If the interpretation is cancelled by calling [Interpretation.cancel]
+  /// an error is thrown.
   Interpretation interpret() {
     _log('STARTED');
 
