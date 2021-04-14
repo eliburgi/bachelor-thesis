@@ -1,20 +1,19 @@
 import 'dart:ui';
 
-/// All occurring token types of this custom chatbot DSL.
+/// All occurring token types of the CCML domain-specific language.
 enum TokenType {
-  // SPECIAL TOKENS
+  // Special Tokens
   none,
   eof,
-  //
   newLine,
   indent,
   dedent,
-  // LITERALS
+  // Literals
   integer,
   string,
-  //
+  // Name
   name,
-  // KEYWORDS
+  // Keywords
   create,
   sender,
   counter,
@@ -39,22 +38,20 @@ enum TokenType {
   addTag,
   removeTag,
   clearTags,
-  // Input
+  if_,
+  else_,
+  hasTag,
+  // Keywords - Input
   input,
   singleChoice,
   choice,
-  // Free Text Input
   freeText,
   when,
   comma,
   respond,
   response,
   fallback,
-  // Conditions
-  if_,
-  else_,
-  hasTag,
-  // OTHERS
+  // Others
   assign,
   lessThan,
   lessThanEqual,
@@ -94,6 +91,8 @@ class Token {
 
   /// The raw string value that represents this token in the
   /// original string that the lexer has detected this token.
+  ///
+  /// Ignore. Used only for syntax highlighting.
   String rawValue;
 
   @override

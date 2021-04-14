@@ -29,8 +29,11 @@ class Interpreter {
   ///
   /// If the interpretation is cancelled by calling [Interpretation.cancel]
   /// an error is thrown.
-  Interpretation interpret() {
+  Interpretation interprete() {
     _log('STARTED');
+
+    // Parsing the program yields the AST tree for this program.
+    var tree = parser.parse();
 
     // The runtime context is passed to the AST nodes and contains important
     // state about the current interpretation.
@@ -41,8 +44,6 @@ class Interpreter {
     );
 
     var run = () async {
-      // Parsing the program yields the AST tree for this program.
-      var tree = parser.parse();
       return await tree.execute(context).then((_) => _log('FINISHED'));
     };
     return Interpretation(run(), context);

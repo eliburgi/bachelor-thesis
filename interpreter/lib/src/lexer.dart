@@ -4,7 +4,7 @@ import 'package:interpreter/src/util.dart';
 /// Responsible for the lexogrphical analysis.
 ///
 /// The lexographic analysis represents the first step of every compiler
-/// or interpreter. The goal of this step is to transform the raw program
+/// or interpreter. The goal of this step is to transform the raw script
 /// code (stream of characters) into a stream of [Token]s.
 ///
 /// Other tasks of the Lexer include:
@@ -52,17 +52,18 @@ class Lexer {
     'hasTag': TokenType.hasTag,
   };
 
-  Lexer(this.program, {this.logPrinter}) {
+  Lexer(this.script, {this.logPrinter}) {
     // init state by reading the first character
     _readNextCharacter();
   }
 
-  /// The .chat program code.
+  /// The CCML script code.
+  ///
   /// This represents the stream of characters that is parsed and transformed
   /// into a stream of tokens.
-  final String program;
+  final String script;
 
-  /// Gets the next token in the program code.
+  /// Reads the next token from the [script].
   Token next() {
     if (_indentQueue.isNotEmpty) {
       _indentQueue.removeLast();
@@ -140,7 +141,7 @@ class Lexer {
     // a token that starts with a letter must be a NAME
     // this includes keywords such as: 'create', 'send', etc.
     if (Util.isLetter(_currentChar)) {
-      _readName(t);
+      _readNameOrKeyword(t);
       _log('next - detected token: $t');
       return t;
     }
@@ -192,7 +193,7 @@ class Lexer {
       return t;
     }
 
-    // END OF FILE: the Lexer has now parsed the whole program
+    // END OF FILE: the Lexer has now parsed the whole script
     if (_currentChar == EOF) {
       t.type = TokenType.eof;
       t.rawValue = '';
@@ -207,7 +208,7 @@ class Lexer {
   }
 
   /// Reads an integer literal, starting at the current character
-  /// in the program code.
+  /// in the script code.
   void _readInteger(Token t) {
     assert(Util.isDigit(_currentChar));
 
@@ -223,7 +224,7 @@ class Lexer {
   }
 
   /// Reads a string literal, starting at the current character
-  /// in the program code.
+  /// in the script code.
   void _readString(Token t) {
     assert(_currentChar == '\'');
 
@@ -241,8 +242,8 @@ class Lexer {
   }
 
   /// Reads a name, starting at the current character
-  /// in the program code.
-  void _readName(Token t) {
+  /// in the script code.
+  void _readNameOrKeyword(Token t) {
     assert(Util.isLetter(_currentChar));
 
     String name = '';
@@ -329,10 +330,10 @@ class Lexer {
     }
   }
 
-  /// The index of the current character in the [program].
+  /// The index of the current character in the [script].
   int _characterIndex = 0;
 
-  /// The current character in the [program].
+  /// The current character in the [script].
   String _currentChar;
 
   /// The current line the lexer is at.
@@ -363,12 +364,12 @@ class Lexer {
   List<int> _indentQueue = [];
   List<int> _dedentQueue = [];
 
-  /// Reads the current character from the program and advances the [_line]
+  /// Reads the next character from the script and advances the [_line]
   /// and [_col] if needed.
   ///
   /// Returns [EOF] to indicate that there are no more tokens.
   void _readNextCharacter() {
-    if (_characterIndex >= program.length) {
+    if (_characterIndex >= script.length) {
       _currentChar = EOF;
       return;
     }
@@ -381,7 +382,7 @@ class Lexer {
       _col++;
     }
 
-    _currentChar = program[_characterIndex];
+    _currentChar = script[_characterIndex];
     _characterIndex++;
 
     _lineStr = '$_lineStr$_currentChar';

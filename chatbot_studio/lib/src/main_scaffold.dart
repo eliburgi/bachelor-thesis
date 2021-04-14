@@ -89,31 +89,32 @@ class MainScaffoldState extends State<MainScaffold> {
     });
   }
 
-  /// Runs the current program.
+  /// Starts executing the current CCML script.
   void runProgram() async {
     if (_isRunningProgram) return;
 
-    //* Clear the console and un-focus the code editor.
+    // Clear the console and un-focus the code editor.
     consolePanelKey.currentState.clear();
     codePanelKey.currentState.unfocus();
 
-    String sourceCode = codePanelKey.currentState.sourceCode;
+    // Read the CCML script from the [CodePanel].
+    String script = codePanelKey.currentState.sourceCode;
 
-    //* Print an error on the console if the program code is empty.
-    if (sourceCode.trim().isEmpty) {
+    // Print an error on the console if the program code is empty.
+    if (script.trim().isEmpty) {
       consolePanelKey.currentState
           .print('ERROR: Program is empty!', LogLevel.error);
       return;
     }
 
-    //* Create & setup interpreter.
+    // Create the interpreter.
     var chatbot = chatbotPanelKey.currentState;
-    var lexer = Lexer(sourceCode);
+    var lexer = Lexer(script);
     var parser = Parser(lexer);
     var interpreter = Interpreter(parser, chatbot);
 
-    //* Print Interpreter log messages to the console panel.
-    //* This also includes log messages from the Lexer and Parser.
+    // Print Interpreter log messages to the console panel.
+    // This also includes log messages from the Lexer and Parser.
     var printToConsole = (msg) {
       if (!_enabledLogs) return;
       consolePanelKey.currentState.print(msg);
@@ -122,8 +123,8 @@ class MainScaffoldState extends State<MainScaffold> {
     parser.logPrinter = printToConsole;
     interpreter.logPrinter = printToConsole;
 
-    //* Highlight the code lines that are currently executed by
-    //* the interpreter.
+    // Highlight the code lines that are currently executed by
+    // the interpreter.
     NodeVisitedCallback highlightCodeVisitor = (node) {
       if (node.lineStart == null || node.lineEnd == null) return;
       codePanelKey.currentState
@@ -131,17 +132,17 @@ class MainScaffoldState extends State<MainScaffold> {
     };
     interpreter.onNodeVisited = highlightCodeVisitor;
 
-    //* Now actually interpret the program.
+    // Execute the script.
     setState(() => _isRunningProgram = true);
     setState(() {
-      _runningInterpretation = interpreter.interpret();
+      _runningInterpretation = interpreter.interprete();
     });
     await _runningInterpretation.future.then((_) {
       consolePanelKey.currentState
           .print('Interpretation completed successfully');
       codePanelKey.currentState.highlightLines(from: null, to: null);
     }).catchError((error) {
-      //* Highlight the line that caused the error in the program.
+      // Highlight the line that caused the error in the program.
       int programLineThatCausedError;
       if (error is LexerError) {
         programLineThatCausedError = error.line;
@@ -153,7 +154,7 @@ class MainScaffoldState extends State<MainScaffold> {
       if (programLineThatCausedError != null) {
         codePanelKey.currentState.highlightError(programLineThatCausedError);
       }
-      //* Additionally print the error message on the console.
+      // Additionally print the error message on the console.
       consolePanelKey.currentState.print(error.toString(), LogLevel.error);
     }).whenComplete(() {
       setState(() {

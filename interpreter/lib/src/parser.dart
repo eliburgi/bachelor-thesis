@@ -3,7 +3,8 @@ import 'ast.dart';
 import 'lexer.dart';
 import 'util.dart';
 
-/// Parser using the recursive descent method.
+/// The Parser reads a stream of [Token]s from the [Lexer] and
+/// constructs the abstract syntax tree (AST) from it.
 class Parser {
   Parser(this.lexer, {this.logPrinter}) {
     _eat();
@@ -11,6 +12,9 @@ class Parser {
 
   final Lexer lexer;
 
+  /// Generates an AST from the tokens read by the [lexer].
+  ///
+  /// Throws a [ParserError] in case of syntactical errors in the script.
   ASTNode parse() {
     _log('STARTED');
     var programNode = _parseProgram();
@@ -21,30 +25,30 @@ class Parser {
   ASTNode _parseProgram() {
     _log('_parseProgram - called');
 
-    var node = ProgramNode();
+    var programNode = ProgramNode();
 
-    // a program can start with any number of declarations
-    // a declaration starts either with create or set
+    // a program can start with declarations (optional)
+    // a declaration can either be a create statement or a set statement
     if (_currentToken.type == TokenType.create ||
         _currentToken.type == TokenType.set_) {
-      node.lineStart = _currentToken.line;
-      node.declarations = _parseDeclarations();
+      programNode.lineStart = _currentToken.line;
+      programNode.declarations = _parseDeclarations();
     }
 
-    // every program must have a flow 'main'
-    node.lineStart = node.lineStart ?? _currentToken.line;
-    node.mainFlow = _parseMainFlow();
+    // a program must have a 'main' flow
+    programNode.lineStart = programNode.lineStart ?? _currentToken.line;
+    programNode.mainFlow = _parseMainFlow();
 
     // a program can have any number of additional flows
     if (_currentToken.type == TokenType.flow) {
-      node.flows = _parseFlows();
+      programNode.flows = _parseFlows();
     }
 
-    // a program always ends with an EOF
+    // a program must end with an EOF token
     _checkToken(TokenType.eof);
 
-    node.lineEnd = _prevToken.line;
-    return node;
+    programNode.lineEnd = _prevToken.line;
+    return programNode;
   }
 
   List<ASTNode> _parseDeclarations() {
@@ -77,9 +81,9 @@ class Parser {
     _log('_parseMainFlow - called');
 
     var node = FlowNode();
+    node.lineStart = _currentToken.line;
 
     // a flow always starts with the flow keyword
-    node.lineStart = _currentToken.line;
     _checkToken(TokenType.flow);
 
     // a flow must have a unique name (represented by a string)
